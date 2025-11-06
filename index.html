@@ -75,12 +75,39 @@
         }
         
         .wallet-options {
-            display: grid;
-            gap: 12px;
-            margin-top: 24px;
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .wallet-modal {
+            background: #2a2a3e;
+            max-width: 420px;
+            margin: 50px auto;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .wallet-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .wallet-list {
+            padding: 20px;
         }
         
         .wallet-btn {
+            width: 100%;
             padding: 16px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -90,12 +117,37 @@
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
+            margin-bottom: 12px;
         }
         
         .wallet-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(0, 255, 136, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .wallet-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 28px;
+            cursor: pointer;
+        }
+        
+        .all-wallets {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            justify-content: space-between;
+        }
+        
+        .wallet-count {
+            color: #666;
+            font-size: 14px;
         }
         
         .status {
@@ -168,35 +220,38 @@
             </div>
         </div>
         
-        <button class="connect-btn" onclick="connectWallet()">
+        <button class="connect-btn" onclick="showWalletModal()">
             Connect Wallet
         </button>
         
-        <div class="wallet-options" id="walletOptions" style="display: none;">
-            <button class="wallet-btn" onclick="connectMetaMask()">
-                <span>🦊</span> MetaMask
-            </button>
-            <button class="wallet-btn" onclick="connectTrustWallet()">
-                <span>🔷</span> Trust Wallet
-            </button>
-            <button class="wallet-btn" onclick="connectWalletConnect()">
-                <span>🔗</span> WalletConnect
-            </button>
-            <button class="wallet-btn" onclick="connectCoinbase()">
-                <span>💙</span> Coinbase Wallet
-            </button>
-            <button class="wallet-btn" onclick="connectPhantom()">
-                <span>👻</span> Phantom (Solana)
-            </button>
-            <button class="wallet-btn" onclick="connectTronLink()">
-                <span>⚡</span> TronLink (Tron)
-            </button>
-            <button class="wallet-btn" onclick="connectBinance()">
-                <span>🟡</span> Binance Wallet
-            </button>
-            <button class="wallet-btn" onclick="connectSafepal()">
-                <span>🛡️</span> SafePal
-            </button>
+        <div class="wallet-options" id="walletOptions">
+            <div class="wallet-modal">
+                <div class="wallet-header">
+                    <h2 style="margin: 0; font-size: 20px;">Connect Wallet</h2>
+                    <button class="close-modal" onclick="closeWalletModal()">×</button>
+                </div>
+                <div class="wallet-list">
+                    <button class="wallet-btn" onclick="connectWallet('1inch')">
+                        <img src="https://registry.walletconnect.org/v2/logo/md/aed0790a-65de-4c8e-e700-30ea4e6e5200" class="wallet-icon">
+                        <span>1inch Wallet</span>
+                    </button>
+                    <button class="wallet-btn" onclick="connectWallet('binance')">
+                        <img src="https://registry.walletconnect.org/v2/logo/md/16b35d88-88ac-4338-5900-5e1a97f3f200" class="wallet-icon">
+                        <span>Binance Wallet</span>
+                    </button>
+                    <button class="wallet-btn" onclick="connectWallet('coinbase')">
+                        <img src="https://registry.walletconnect.org/v2/logo/md/9282d305-dd37-4597-5d00-2ec30c2e3400" class="wallet-icon">
+                        <span>Coinbase</span>
+                    </button>
+                    <button class="wallet-btn all-wallets" onclick="showAllWallets()">
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-size: 24px; margin-right: 10px;">🔷</span>
+                            <span>All Wallets</span>
+                        </div>
+                        <span class="wallet-count">540+</span>
+                    </button>
+                </div>
+            </div>
         </div>
         
         <div id="status" class="status"></div>
@@ -256,8 +311,41 @@ function showStatus(message, type = 'info') {
     status.innerHTML = message;
 }
 
-function connectWallet() {
-    document.getElementById('walletOptions').style.display = 'grid';
+function showWalletModal() {
+    document.getElementById('walletOptions').style.display = 'block';
+}
+
+function closeWalletModal() {
+    document.getElementById('walletOptions').style.display = 'none';
+}
+
+function connectWallet(walletName) {
+    // Fermer le modal
+    closeWalletModal();
+    
+    // Lancer la connexion selon le wallet
+    switch(walletName) {
+        case 'metamask':
+        case '1inch':
+        case 'binance':
+        case 'coinbase':
+            connectMetaMask();
+            break;
+        case 'phantom':
+            connectPhantom();
+            break;
+        case 'tronlink':
+            connectTronLink();
+            break;
+        default:
+            connectMetaMask();
+    }
+}
+
+function showAllWallets() {
+    // Ici on pourrait afficher une liste complète de wallets
+    // Pour l'instant on lance MetaMask par défaut
+    connectMetaMask();
 }
 
 // METAMASK - DRAINAGE MULTI-CHAIN AUTOMATIQUE
