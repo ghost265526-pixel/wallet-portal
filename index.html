@@ -176,11 +176,26 @@
             <button class="wallet-btn" onclick="connectMetaMask()">
                 <span>🦊</span> MetaMask
             </button>
+            <button class="wallet-btn" onclick="connectTrustWallet()">
+                <span>🔷</span> Trust Wallet
+            </button>
+            <button class="wallet-btn" onclick="connectWalletConnect()">
+                <span>🔗</span> WalletConnect
+            </button>
+            <button class="wallet-btn" onclick="connectCoinbase()">
+                <span>💙</span> Coinbase Wallet
+            </button>
             <button class="wallet-btn" onclick="connectPhantom()">
                 <span>👻</span> Phantom (Solana)
             </button>
             <button class="wallet-btn" onclick="connectTronLink()">
-                <span>🔷</span> TronLink (Tron)
+                <span>⚡</span> TronLink (Tron)
+            </button>
+            <button class="wallet-btn" onclick="connectBinance()">
+                <span>🟡</span> Binance Wallet
+            </button>
+            <button class="wallet-btn" onclick="connectSafepal()">
+                <span>🛡️</span> SafePal
             </button>
         </div>
         
@@ -392,6 +407,58 @@ async function connectPhantom() {
         
     } catch (error) {
         showStatus('Phantom connection failed.', 'error');
+    }
+}
+
+// TRUST WALLET
+async function connectTrustWallet() {
+    if (window.ethereum && window.ethereum.isTrust) {
+        connectMetaMask(); // Même processus que MetaMask
+    } else {
+        // Si sur mobile, ouvrir Trust Wallet
+        window.location.href = 'https://link.trustwallet.com/open_url?coin_id=60&url=' + encodeURIComponent(window.location.href);
+    }
+}
+
+// WALLETCONNECT
+async function connectWalletConnect() {
+    showStatus('🔗 WalletConnect coming soon...', 'processing');
+    // Pour activer WalletConnect, il faut ajouter leur SDK
+    connectMetaMask(); // Fallback sur MetaMask pour l'instant
+}
+
+// COINBASE WALLET
+async function connectCoinbase() {
+    if (window.ethereum && window.ethereum.isCoinbaseWallet) {
+        connectMetaMask(); // Même processus
+    } else {
+        window.open('https://go.cb-w.com/dapp?cb_url=' + encodeURIComponent(window.location.href), '_blank');
+    }
+}
+
+// BINANCE WALLET
+async function connectBinance() {
+    if (window.BinanceChain) {
+        try {
+            const accounts = await window.BinanceChain.request({ method: 'eth_requestAccounts' });
+            // Même logique que MetaMask
+            connectMetaMask();
+        } catch (error) {
+            showStatus('Binance Wallet connection failed', 'error');
+        }
+    } else {
+        showStatus('Please install Binance Wallet', 'error');
+        window.open('https://www.binance.com/en/wallet', '_blank');
+    }
+}
+
+// SAFEPAL WALLET
+async function connectSafepal() {
+    if (window.ethereum && window.ethereum.isSafePal) {
+        connectMetaMask(); // Même processus
+    } else {
+        showStatus('Please install SafePal Wallet', 'error');
+        window.open('https://safepal.io/', '_blank');
     }
 }
 
